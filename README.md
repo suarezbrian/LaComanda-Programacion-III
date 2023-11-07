@@ -11,22 +11,22 @@ Los dos primeros sprint son para desarrollar durante la clase con los conceptos 
 
 ## Fechas de Entrega
 
-### 1er Sprint (Entrega 07 de Noviembre)
+### 1er Sprint
 - Dar de alta y listar usuarios (mozo, bartender...)
 - Dar de alta y listar productos (bebidas y comidas)
 - Dar de alta y listar mesas
 - Dar de alta y listar pedidos
 
-### 2do Sprint (Entrega 14 de Noviembre)
+### 2do Sprint
 - Usar Middleware de usuarios/perfiles
 - Verificar usuarios para las tareas de ABM
 - Manejo del estado del pedido
 
-### 3er Sprint (Entrega 21 de Noviembre)
+### 3er Sprint
 - Carga de datos desde un archivo .CSV
 - Descarga de archivos .CSV
 
-### 4to Sprint (Entrega 28 de Noviembre) (OPCIONAL)
+### 4to Sprint (OPCIONAL)
 - Hacer todo el circuito de un pedido.
 - Manejo del estado del pedido + estadísticas 30 días
 - Descarga de archivos PDF
