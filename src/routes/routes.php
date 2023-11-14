@@ -6,6 +6,7 @@ include_once  __DIR__ . '/../controller/productoController.php';
 include_once  __DIR__ . '/../controller/pedidoController.php';
 include_once  __DIR__ . '/../controller/usuarioController.php';
 include_once  __DIR__ . '/../middlewares/AuthMiddleware.php';
+include_once  __DIR__ . '/../middlewares/EstadoPedidoMiddleware.php';
 
 use Slim\App;
 
@@ -41,6 +42,7 @@ return function (App $app) {
 
         $group->post('/add', 'PedidoController:insertarPedido');
         $group->get('/get/{id}', 'PedidoController:buscarPedidoPorId');
+        $group->put('/cambiarEstado', 'PedidoController:cambiarEstadoPedido')->add(new EstadoPedidoMiddleware());
         $group->get('/getAll', 'PedidoController:listarPedidos');
         $group->delete('/delete/{id}', 'PedidoController:borrarPedido');
         $group->put('/update/{id}', 'PedidoController:modificarPedido');

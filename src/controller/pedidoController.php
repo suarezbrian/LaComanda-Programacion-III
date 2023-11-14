@@ -3,6 +3,7 @@
 include_once  __DIR__ . '/../models/mesa.php';
 include_once  __DIR__ . '/../models/empleado.php';
 include_once  __DIR__ . '/../models/pedido.php';
+include_once  __DIR__ . '/../models/estadoPedido.php';
 
 class PedidoController {
     
@@ -15,19 +16,22 @@ class PedidoController {
         $id_estado = $data['id_estado'];
         $tiempo_estimado = $data['tiempo_estimado'];        
         
-       
+        
         $validar = $this->validarDatos($data, $response);
         
         if($validar){
+            
             $pedido = new Pedido(); 
             $pedido->id_mesa = $id_mesa;
             $pedido->id_empleado = $id_empleado;
             $pedido->codigo = $codigo;
             $pedido->id_estado = $id_estado;
-            $pedido->tiempo_estimado = $tiempo_estimado;
-        
+            $pedido->tiempo_estimado = $tiempo_estimado;            
+          
+            $estadoMesa = Mesa::CambiarEstadoMesa($pedido->id_mesa, 6);
+
             $result = $pedido->InsertarPedido();
-        
+            
             if ($result) {
                 $response->getBody()->write(json_encode(['success' => true, 'message' => 'El pedido se realizó con éxito.']));
             } else {
@@ -60,9 +64,15 @@ class PedidoController {
     
         $mesa = $this->validarMesaExistente($id_mesa);
         $empleado = $this->validarEmpleadoExistente($id_empleado);
-    
+        $estado = $this->validarEstadoExistente($id_estado);
+        
         if (!$mesa || !$empleado) {
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'Los IDs de mesa y/o empleado no son válidos']));
+            return false;
+        }
+        if(!$estado){
+           
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'El ID estado del pedido no es válido [1 = PENDIENTE, 2 = EN PROCESO, 3 = ENTREGADO, 4 = CANCELADO]']));
             return false;
         }
         
@@ -71,13 +81,14 @@ class PedidoController {
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'El código del pedido ya está en uso.']));
             return false;
         }
-
+       
         $pedidoExistente = Mesa::pedidoExistenteEnMesa($id_mesa);
+        
         if ($pedidoExistente) {
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'Esta mesa no se encuentra disponible.']));
             return false;
         }
-
+       
         return true;
     }
 
@@ -125,9 +136,9 @@ class PedidoController {
     public function modificarPedido($request, $response, $args) {
         $jsonData = $request->getBody()->getContents();
         $data = json_decode($jsonData, true);
-
+      
         $validar = $this->validarDatos($data, $response);
-
+       
         if($validar){
             $pedido = new Pedido();
             $pedido->id = $args['id'];
@@ -149,6 +160,31 @@ class PedidoController {
         return $response->withHeader('Content-Type', 'application/json');
     }
 
+    public function cambiarEstadoPedido($request, $response, $args) {  
+
+        $codigo_pedido = $request->getAttribute('codigo_pedido');
+        $id_estado = $request->getAttribute('id_estado');  
+
+        $pedido = Pedido::TraerUnPedidoPorCodigo($codigo_pedido);
+        $nombreEstado = EstadoPedido::TraerUnEstadoPedido($pedido->id_estado);
+        $cambiarPedido = Pedido::CambiarEstadoPedido($codigo_pedido, $id_estado);
+
+        if(!$cambiarPedido){
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se pudo cambiar el estado del pedido.']));                       
+        }else{
+          
+            if($id_estado === 4){               
+                $estadoMesa = Mesa::CambiarEstadoMesa($pedido->id_mesa, 5);       
+            }else{
+                $estadoMesa = Mesa::CambiarEstadoMesa($pedido->id_mesa, 6);               
+            }
+            $response->getBody()->write(json_encode(['success' => true, 'message' => 'Estado del pedido modificado a .' . $nombreEstado->nombre]));  
+                             
+        }
+       
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
     private function validarMesaExistente($id) {  
         if (is_numeric($id)) {    
             $mesa = Mesa::TraerUnaMesa($id);
@@ -162,6 +198,16 @@ class PedidoController {
         if (is_numeric($id)) {
             $empleado = Empleado::TraerUnEmpleado($id);
             return $empleado;
+        } else {
+            return false; 
+        }
+    }
+
+    public function validarEstadoExistente($id) {
+       
+        if (is_numeric($id)) {
+            $estado = EstadoPedido::TraerUnEstadoPedido($id);           
+            return $estado;
         } else {
             return false; 
         }

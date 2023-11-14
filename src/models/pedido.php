@@ -16,7 +16,7 @@ class Pedido
         $consulta->bindValue(':id_mesa', $this->id_mesa, PDO::PARAM_INT);
         $consulta->bindValue(':id_empleado', $this->id_empleado, PDO::PARAM_INT);
         $consulta->bindValue(':codigo', $this->codigo, PDO::PARAM_STR);
-        $consulta->bindValue(':id_estado', $this->id_estado, PDO::PARAM_STR);
+        $consulta->bindValue(':id_estado', $this->id_estado, PDO::PARAM_INT);
         $consulta->bindValue(':tiempo_estimado', $this->tiempo_estimado, PDO::PARAM_STR);
         $consulta->execute();
         return $objetoAccesoDato->RetornarUltimoIdInsertado();
@@ -41,6 +41,17 @@ class Pedido
         return $pedidoBuscado;
     }
 
+    public static function TraerUnPedidoPorCodigo($codigo_pedido)
+    {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, id_mesa, id_empleado, codigo, id_estado, tiempo_estimado FROM pedidos where codigo = :codigo_pedido");
+        $consulta->bindValue(':codigo_pedido', $codigo_pedido, PDO::PARAM_STR);
+        $consulta->execute();
+        $pedidoBuscado = $consulta->fetchObject('Pedido');
+       
+        return $pedidoBuscado;
+    }
+
     public function ModificarPedidoParametros()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
@@ -49,7 +60,7 @@ class Pedido
         $consulta->bindValue(':id_mesa', $this->id_mesa, PDO::PARAM_INT);
         $consulta->bindValue(':id_empleado', $this->id_empleado, PDO::PARAM_INT);
         $consulta->bindValue(':codigo', $this->codigo, PDO::PARAM_STR);
-        $consulta->bindValue(':id_estado', $this->id_estado, PDO::PARAM_STR);
+        $consulta->bindValue(':id_estado', $this->id_estado, PDO::PARAM_INT);
         $consulta->bindValue(':tiempo_estimado', $this->tiempo_estimado, PDO::PARAM_STR);
         $resultado = $consulta->execute();
 
@@ -58,6 +69,22 @@ class Pedido
             return false;
         }
         return $this->id;
+    }
+
+    public static function CambiarEstadoPedido($codigo_pedido, $id_estado){       
+
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET id_estado = :id_estado WHERE codigo = :codigo_pedido");  
+        $consulta->bindValue(':codigo_pedido', $codigo_pedido, PDO::PARAM_STR);     
+        $consulta->bindValue(':id_estado', $id_estado, PDO::PARAM_INT);
+        $resultado = $consulta->execute();
+
+        $filasAfectadas = $consulta->rowCount();
+        
+        if ($filasAfectadas === 0) {
+            return false;
+        }
+        return $codigo_pedido;
     }
 
     public function BorrarPedido()

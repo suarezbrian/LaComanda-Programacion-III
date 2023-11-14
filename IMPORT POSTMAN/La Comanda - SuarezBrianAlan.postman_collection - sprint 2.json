@@ -356,12 +356,12 @@
 							"formdata": [
 								{
 									"key": "codigo",
-									"value": "A010",
+									"value": "A015",
 									"type": "text"
 								},
 								{
-									"key": "estado",
-									"value": "LIBRE",
+									"key": "id_estado",
+									"value": "5",
 									"type": "text"
 								}
 							]
@@ -397,11 +397,11 @@
 						"method": "GET",
 						"header": [],
 						"body": {
-							"mode": "formdata",
-							"formdata": []
+							"mode": "raw",
+							"raw": ""
 						},
 						"url": {
-							"raw": "http://localhost:8888/api/mesas/get/1?id_usuario=1",
+							"raw": "http://localhost:8888/api/mesas/get/24?id_usuario=1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -411,7 +411,7 @@
 								"api",
 								"mesas",
 								"get",
-								"1"
+								"24"
 							],
 							"query": [
 								{
@@ -680,7 +680,7 @@
 							"formdata": [
 								{
 									"key": "id_mesa",
-									"value": "7",
+									"value": "24",
 									"type": "text"
 								},
 								{
@@ -690,17 +690,17 @@
 								},
 								{
 									"key": "codigo",
-									"value": "P010",
+									"value": "P011",
 									"type": "text"
 								},
 								{
-									"key": "estado",
-									"value": "PENDIENTE",
+									"key": "id_estado",
+									"value": "1",
 									"type": "text"
 								},
 								{
 									"key": "tiempo_estimado",
-									"value": "12",
+									"value": "100",
 									"type": "text"
 								}
 							]
@@ -831,6 +831,37 @@
 								"pedidos",
 								"update",
 								"4"
+							],
+							"query": [
+								{
+									"key": "id_usuario",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cambiar estado del pedido",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "    {\r\n        \"codigo_pedido\": \"P011\",\r\n        \"id_estado\": 4\r\n    }"
+						},
+						"url": {
+							"raw": "http://localhost:8888/api/pedidos/cambiarEstado?id_usuario=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"api",
+								"pedidos",
+								"cambiarEstado"
 							],
 							"query": [
 								{

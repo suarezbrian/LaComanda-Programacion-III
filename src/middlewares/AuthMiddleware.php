@@ -49,7 +49,7 @@ class AuthMiddleware
     private function crearRespuesta(string $mensaje): Response
     {
         $response = new Response();
-        $payload = json_encode(['mensaje' => $mensaje]);
+        $payload = json_encode(['success' => false, 'mensaje' => $mensaje]);
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
     }

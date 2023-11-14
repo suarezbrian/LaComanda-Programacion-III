@@ -4,12 +4,12 @@ class Mesa
 {
     public $id;
     public $codigo;
-    public $estado;
+    public $id_estado;
 
     public function InsertarMesa()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT INTO mesas (codigo, estado) VALUES ('$this->codigo', '$this->estado')");
+        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT INTO mesas (codigo, id_estado) VALUES ('$this->codigo', '$this->id_estado')");
         $consulta->execute();
         return $objetoAccesoDato->RetornarUltimoIdInsertado();
     }
@@ -17,9 +17,9 @@ class Mesa
     public function InsertarMesaParametros()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT INTO mesas (codigo, estado) VALUES (:codigo, :estado)");
+        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT INTO mesas (codigo, id_estado) VALUES (:codigo, :estado)");
         $consulta->bindValue(':codigo', $this->codigo, PDO::PARAM_STR);
-        $consulta->bindValue(':estado', $this->estado, PDO::PARAM_STR);
+        $consulta->bindValue(':estado', $this->id_estado, PDO::PARAM_INT);
         $consulta->execute();
         return $objetoAccesoDato->RetornarUltimoIdInsertado();
     }
@@ -27,7 +27,7 @@ class Mesa
     public static function TraerTodasLasMesas()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, codigo, estado FROM mesas");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, codigo, id_estado FROM mesas");
         $consulta->execute();
         return $consulta->fetchAll(PDO::FETCH_CLASS, "mesa");
     }
@@ -35,7 +35,18 @@ class Mesa
     public static function TraerUnaMesa($id)
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, codigo, estado FROM mesas where id = $id");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, codigo, id_estado FROM mesas where id = $id");
+        $consulta->execute();
+        $mesaBuscada = $consulta->fetchObject('mesa');
+        
+        return $mesaBuscada;
+    }
+
+    public static function TraerUnaMesaPorCodigo($codigo_mesa)
+    {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, codigo, id_estado FROM mesas where codigo = :codigo_mesa");
+        $consulta->bindValue(':codigo_mesa', $codigo_mesa, PDO::PARAM_STR);
         $consulta->execute();
         $mesaBuscada = $consulta->fetchObject('mesa');
         
@@ -45,10 +56,10 @@ class Mesa
     public function ModificarMesaParametros()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE mesas SET codigo = :codigo, estado = :estado WHERE id = :id");
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE mesas SET codigo = :codigo, id_estado = :estado WHERE id = :id");
         $consulta->bindValue(':id', $this->id, PDO::PARAM_INT);
         $consulta->bindValue(':codigo', $this->codigo, PDO::PARAM_STR);
-        $consulta->bindValue(':estado', $this->estado, PDO::PARAM_STR);
+        $consulta->bindValue(':estado', $this->id_estado, PDO::PARAM_INT);
         $resultado = $consulta->execute();
 
         $filasAfectadas = $consulta->rowCount();
@@ -67,16 +78,47 @@ class Mesa
         return $consulta->rowCount();
     }
 
+    public static function CambiarEstadoMesa($id, $estado){       
+        
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE mesas SET id_estado = :estado WHERE id = $id");       
+        $consulta->bindValue(':estado', $estado, PDO::PARAM_INT);
+        $resultado = $consulta->execute();
+
+        $filasAfectadas = $consulta->rowCount();
+        if ($filasAfectadas === 0 || !$resultado) {
+            return false;
+        }
+        return $id;
+    }
+
+    public static function CambiarEstadoMesaPorCodigo($codigo_mesa, $estado){       
+        
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE mesas SET id_estado = :estado WHERE codigo = :codigo_mesa");  
+        $consulta->bindValue(':codigo_mesa', $codigo_mesa, PDO::PARAM_STR);     
+        $consulta->bindValue(':estado', $estado, PDO::PARAM_INT);
+        $resultado = $consulta->execute();
+        
+        $filasAfectadas = $consulta->rowCount();
+        
+        if ($filasAfectadas === 0) {
+            return false;
+        }
+        return $codigo_mesa;
+    }
+
     public static function pedidoExistenteEnMesa($id_mesa) {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT estado FROM pedidos WHERE id_mesa = :id_mesa");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id_estado FROM pedidos WHERE id_mesa = :id_mesa");
         $consulta->bindValue(':id_mesa', $id_mesa, PDO::PARAM_INT);
         $consulta->execute();
     
         $pedidos = $consulta->fetchAll(PDO::FETCH_ASSOC);
-    
+       
         foreach ($pedidos as $pedido) {
-            if (strtolower($pedido['estado']) !== 'libre') {
+           
+            if (strtolower($pedido['id_estado']) !== 5) {
                 return true;
             }
         }
