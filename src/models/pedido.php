@@ -6,17 +6,17 @@ class Pedido
     public $id_mesa;
     public $id_empleado;
     public $codigo;
-    public $estado;
+    public $id_estado;
     public $tiempo_estimado;
 
     public function InsertarPedido()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT INTO pedidos (id_mesa, id_empleado, codigo, estado, tiempo_estimado) VALUES (:id_mesa, :id_empleado, :codigo, :estado, :tiempo_estimado)");
+        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT INTO pedidos (id_mesa, id_empleado, codigo, id_estado, tiempo_estimado) VALUES (:id_mesa, :id_empleado, :codigo, :id_estado, :tiempo_estimado)");
         $consulta->bindValue(':id_mesa', $this->id_mesa, PDO::PARAM_INT);
         $consulta->bindValue(':id_empleado', $this->id_empleado, PDO::PARAM_INT);
         $consulta->bindValue(':codigo', $this->codigo, PDO::PARAM_STR);
-        $consulta->bindValue(':estado', $this->estado, PDO::PARAM_STR);
+        $consulta->bindValue(':id_estado', $this->id_estado, PDO::PARAM_STR);
         $consulta->bindValue(':tiempo_estimado', $this->tiempo_estimado, PDO::PARAM_STR);
         $consulta->execute();
         return $objetoAccesoDato->RetornarUltimoIdInsertado();
@@ -25,7 +25,7 @@ class Pedido
     public static function TraerTodosLosPedidos()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, id_mesa, id_empleado, codigo, estado, tiempo_estimado FROM pedidos");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, id_mesa, id_empleado, codigo, id_estado, tiempo_estimado FROM pedidos");
         $consulta->execute();
         return $consulta->fetchAll(PDO::FETCH_CLASS, "Pedido");
     }
@@ -33,7 +33,7 @@ class Pedido
     public static function TraerUnPedido($id)
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, id_mesa, id_empleado, codigo, estado, tiempo_estimado FROM pedidos where id = :id");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, id_mesa, id_empleado, codigo, id_estado, tiempo_estimado FROM pedidos where id = :id");
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->execute();
         $pedidoBuscado = $consulta->fetchObject('Pedido');
@@ -44,12 +44,12 @@ class Pedido
     public function ModificarPedidoParametros()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET id_mesa = :id_mesa, id_empleado = :id_empleado, codigo = :codigo, estado = :estado, tiempo_estimado = :tiempo_estimado WHERE id = :id");
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET id_mesa = :id_mesa, id_empleado = :id_empleado, codigo = :codigo, id_estado = :id_estado, tiempo_estimado = :tiempo_estimado WHERE id = :id");
         $consulta->bindValue(':id', $this->id, PDO::PARAM_INT);
         $consulta->bindValue(':id_mesa', $this->id_mesa, PDO::PARAM_INT);
         $consulta->bindValue(':id_empleado', $this->id_empleado, PDO::PARAM_INT);
         $consulta->bindValue(':codigo', $this->codigo, PDO::PARAM_STR);
-        $consulta->bindValue(':estado', $this->estado, PDO::PARAM_STR);
+        $consulta->bindValue(':id_estado', $this->id_estado, PDO::PARAM_STR);
         $consulta->bindValue(':tiempo_estimado', $this->tiempo_estimado, PDO::PARAM_STR);
         $resultado = $consulta->execute();
 

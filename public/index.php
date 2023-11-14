@@ -20,6 +20,9 @@ $app->getContainer()['ProductoController'] = function ($container) {
 $app->getContainer()['PedidoController'] = function ($container) {
     return new PedidoController($container);
 };
+$app->getContainer()['UsuarioController'] = function ($container) {
+    return new UsuarioController($container);
+};
 
 $routes = require __DIR__ . '/../src/routes/routes.php';
 $routes($app);

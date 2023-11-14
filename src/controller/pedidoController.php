@@ -12,7 +12,7 @@ class PedidoController {
         $id_mesa = $data['id_mesa'];
         $id_empleado = $data['id_empleado'];
         $codigo = $data['codigo'];
-        $estado = $data['estado'];
+        $id_estado = $data['id_estado'];
         $tiempo_estimado = $data['tiempo_estimado'];        
         
        
@@ -23,7 +23,7 @@ class PedidoController {
             $pedido->id_mesa = $id_mesa;
             $pedido->id_empleado = $id_empleado;
             $pedido->codigo = $codigo;
-            $pedido->estado = $estado;
+            $pedido->id_estado = $id_estado;
             $pedido->tiempo_estimado = $tiempo_estimado;
         
             $result = $pedido->InsertarPedido();
@@ -45,12 +45,10 @@ class PedidoController {
         $id_mesa = $data['id_mesa'];
         $id_empleado = $data['id_empleado'];
         $codigo = $data['codigo'];
-        $estado = $data['estado'];
+        $id_estado = $data['id_estado'];
         $tiempo_estimado = $data['tiempo_estimado'];   
 
-        var_dump($estado);
-
-        if (empty($id_mesa) || empty($id_empleado) || empty($codigo) || empty($estado) || empty($tiempo_estimado)) {
+        if (empty($id_mesa) || empty($id_empleado) || empty($codigo) || empty($id_estado) || empty($tiempo_estimado)) {
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'Ningún campo puede ser nulo.']));
             return false;
         }
@@ -96,11 +94,17 @@ class PedidoController {
         $response->getBody()->write(json_encode($pedido));
         return $response->withHeader('Content-Type', 'application/json');
     }
-
     public function listarPedidos($request, $response, $args) {
         $pedidos = Pedido::TraerTodosLosPedidos();
+    
+        if (!$pedidos) {
 
-        $response->getBody()->write(json_encode($pedidos));
+            $payload = json_encode(['success' => false, 'message' => 'No hay pedidos disponibles']);
+            $response->getBody()->write($payload);
+        } else {
+            $response->getBody()->write(json_encode(['success' => true, 'pedidos' => $pedidos]));
+        }
+    
         return $response->withHeader('Content-Type', 'application/json');
     }
 
@@ -130,7 +134,7 @@ class PedidoController {
             $pedido->id_mesa =  $data['id_mesa'];
             $pedido->id_empleado = $data['id_empleado'];
             $pedido->codigo = $data['codigo'];
-            $pedido->estado = $data['estado'];
+            $pedido->id_estado = $data['id_estado'];
             $pedido->tiempo_estimado = $data['tiempo_estimado'];
 
             $result = $pedido->ModificarPedidoParametros();
