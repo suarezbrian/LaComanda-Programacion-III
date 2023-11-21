@@ -6,35 +6,41 @@ class Empleado
     public $nombre;
     public $rol;
     public $contacto;
-
-    public function mostrarDatos()
-    {
-        return "Metodo mostar:" . $this->id . "  " . $this->nombre . "  " . $this->rol . " " . $this->contacto;
-    }
-
-    public function InsertarEmpleado()
-    {
-        $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT into empleados (nombre,rol,contacto)values('$this->nombre','$this->rol','$this->contacto')");
-        $consulta->execute();
-        return $objetoAccesoDato->RetornarUltimoIdInsertado();
-    }
+    public $activo;
+    public $fecha_creacion;
+    public $identificador;
 
     public function InsertarEmpleadoParametros()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT into empleados (nombre,rol,contacto)values(:nombre,:rol,:contacto)");   
+        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT into empleados (nombre,rol,contacto,activo,fecha_creacion) values (:nombre,:rol,:contacto,:activo,:fecha_creacion)");   
         $consulta->bindValue(':nombre', $this->nombre, PDO::PARAM_STR);
         $consulta->bindValue(':rol', $this->rol, PDO::PARAM_STR);
         $consulta->bindValue(':contacto', $this->contacto, PDO::PARAM_STR);
+        $consulta->bindValue(':activo', $this->activo, PDO::PARAM_INT);
+        $consulta->bindValue(':fecha_creacion', $this->fecha_creacion, PDO::PARAM_STR);     
         $consulta->execute();
-        return $objetoAccesoDato->RetornarUltimoIdInsertado();
+    
+        $idInsertado = $objetoAccesoDato->RetornarUltimoIdInsertado();    
+        $nuevoIdentificador = $idInsertado . $this->nombre;    
+        $this->ActualizarIdentificador($idInsertado, $nuevoIdentificador);
+    
+        return $idInsertado;
+    }
+    
+    public function ActualizarIdentificador($idEmpleado, $nuevoIdentificador)
+    {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE empleados SET identificador = :nuevoIdentificador WHERE id = :idEmpleado");
+        $consulta->bindValue(':nuevoIdentificador', $nuevoIdentificador, PDO::PARAM_STR);
+        $consulta->bindValue(':idEmpleado', $idEmpleado, PDO::PARAM_INT);
+        $consulta->execute();
     }
 
     public static function TraerTodoLosEmpleado()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id,nombre, rol,contacto FROM empleados");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM empleados where activo = 0");
         $consulta->execute();
        
         return $consulta->fetchAll(PDO::FETCH_CLASS, "empleado");
@@ -43,7 +49,7 @@ class Empleado
     public static function TraerUnEmpleado($id)
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id,nombre, rol,contacto FROM empleados where id = $id");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM empleados where id = $id and activo = 0");
         $consulta->execute();
         $cdBuscado = $consulta->fetchObject('empleado');
         
@@ -62,6 +68,15 @@ class Empleado
         return $consulta->rowCount();
     }
 
+    public function BajaLogicaDeLaDB($idEmpleado)
+    {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE empleados SET activo = 1 WHERE id = :idEmpleado");
+        $consulta->bindValue(':idEmpleado', $idEmpleado, PDO::PARAM_INT);
+        $consulta->execute();
+        return $consulta->rowCount();
+    }
+
     public function ModificarEmpleadoParametros()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
@@ -70,18 +85,33 @@ class Empleado
 				set nombre=:nombre,
 				rol=:rol,
 				contacto=:contacto
-				WHERE id=:id");
+				WHERE id=:id and activo = 0");
         $consulta->bindValue(':id', $this->id, PDO::PARAM_INT);
         $consulta->bindValue(':nombre', $this->nombre, PDO::PARAM_STR);
         $consulta->bindValue(':rol', $this->rol, PDO::PARAM_STR);
         $consulta->bindValue(':contacto', $this->contacto, PDO::PARAM_STR);
         $resultado = $consulta->execute();
-        
+
         $filasAfectadas = $consulta->rowCount();    
         if ($filasAfectadas === 0 || !$resultado) {
             return false;
         }    
         return $this->id;
+    }
+
+    public static function TraerEmpleadoPorIdentificador($identificador)
+    {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM empleados WHERE identificador = :identificador");
+        $consulta->bindValue(':identificador', $identificador, PDO::PARAM_STR);
+        $consulta->execute();
+
+        $empleado = $consulta->fetch(PDO::FETCH_ASSOC);
+
+        if (!$empleado) {
+            return false;
+        }
+        return $empleado;
     }
 
 }

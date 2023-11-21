@@ -3,6 +3,7 @@
 include_once  __DIR__ . '/../models/mesa.php';
 include_once  __DIR__ . '/../models/empleado.php';
 include_once  __DIR__ . '/../models/pedido.php';
+include_once  __DIR__ . '/../models/producto.php';
 include_once  __DIR__ . '/../models/estadoPedido.php';
 
 class PedidoController {
@@ -11,11 +12,8 @@ class PedidoController {
         $data = $request->getParsedBody();
     
         $id_mesa = $data['id_mesa'];
-        $id_empleado = $data['id_empleado'];
         $codigo = $data['codigo'];
-        $id_estado = $data['id_estado'];
-        $tiempo_estimado = $data['tiempo_estimado'];        
-        
+        $id_estado = 1; // 1= PENDIENTE.        
         
         $validar = $this->validarDatos($data, $response);
         
@@ -23,10 +21,8 @@ class PedidoController {
             
             $pedido = new Pedido(); 
             $pedido->id_mesa = $id_mesa;
-            $pedido->id_empleado = $id_empleado;
             $pedido->codigo = $codigo;
             $pedido->id_estado = $id_estado;
-            $pedido->tiempo_estimado = $tiempo_estimado;            
           
             $estadoMesa = Mesa::CambiarEstadoMesa($pedido->id_mesa, 6);
 
@@ -47,26 +43,18 @@ class PedidoController {
     private function validarDatos($data, $response){
     
         $id_mesa = $data['id_mesa'];
-        $id_empleado = $data['id_empleado'];
         $codigo = $data['codigo'];
-        $id_estado = $data['id_estado'];
-        $tiempo_estimado = $data['tiempo_estimado'];   
+        $id_estado = 1;
 
-        if (empty($id_mesa) || empty($id_empleado) || empty($codigo) || empty($id_estado) || empty($tiempo_estimado)) {
+        if (empty($id_mesa) || empty($codigo)) {
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'Ningún campo puede ser nulo.']));
             return false;
         }
     
-        if (!is_numeric($tiempo_estimado)) {
-            $response->getBody()->write(json_encode(['success' => false, 'message' => 'El campo "tiempo_estimado" debe ser numérico.']));
-            return false;
-        }
-    
         $mesa = $this->validarMesaExistente($id_mesa);
-        $empleado = $this->validarEmpleadoExistente($id_empleado);
         $estado = $this->validarEstadoExistente($id_estado);
         
-        if (!$mesa || !$empleado) {
+        if (!$mesa) {
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'Los IDs de mesa y/o empleado no son válidos']));
             return false;
         }
@@ -90,6 +78,26 @@ class PedidoController {
         }
        
         return true;
+    }
+
+    public function listarPedidosPorEstado($request, $response, $args) {
+        $estado_pedido = $args['id'];
+
+        if (!is_numeric($estado_pedido)) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'El campo "estado_pedido" debe ser numérico.']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+    
+        $pedidos = Pedido::TraerPedidosPorEstado($estado_pedido);
+        $nombreEstado = EstadoPedido::TraerUnEstadoPedido($estado_pedido);
+        
+        if (!$pedidos) {
+            $response->getBody()->write(json_encode(['success' => false, 'Estado ' => $nombreEstado->nombre, 'message' => 'No hay pedidos disponibles para el estado especificado.']));
+        } else {
+            $response->getBody()->write(json_encode(['success' => true, 'Estado ' => $nombreEstado->nombre,'pedidos' => $pedidos]));
+        }
+    
+        return $response->withHeader('Content-Type', 'application/json');
     }
 
     public function buscarPedidoPorId($request, $response, $args) {
@@ -211,6 +219,101 @@ class PedidoController {
         } else {
             return false; 
         }
+    }
+
+    public function asignarEmpleadoPedido($request, $response, $args)
+    {
+        $data = $request->getParsedBody();
+
+        $idEmpleado = $data['id_empleado'];
+        $tiempoEstimado = $data['tiempo_estimado'];
+        $codigoPedido = $data['codigo_pedido'];
+
+        $empleado = Empleado::TraerUnEmpleado($idEmpleado);
+        if (!$empleado) {
+            $response->getBody()->write(json_encode(['success' => false, 'id' => $idEmpleado,'message' => 'El empleado no existe']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }   
+
+        $pedido = Pedido::TraerUnPedidoPorCodigo($codigoPedido);
+        if (!$pedido) {
+            $response->getBody()->write(json_encode(['success' => false, 'codigo' => $codigoPedido,'message' => 'No existe un pedido.']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
+        $result = $pedido->AsignarEmpleado($idEmpleado, $tiempoEstimado, $codigoPedido);
+
+        if ($result) {
+            $response->getBody()->write(json_encode(['success' => true, 'codigo' => $codigoPedido, 'empleado' => $empleado->nombre, 'timepo_estimado' => $tiempoEstimado,
+            'message' => 'Pedido asignado al empleado']));
+        } else {
+            $estado = EstadoPedido::TraerUnEstadoPedido($pedido->id_estado)->nombre;  
+            $response->getBody()->write(json_encode(['success' => false, 'codigo' => $codigoPedido,'estado' => $estado, 'message' => 'No se pudo asignar el pedido al empleado']));
+        }
+
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function agregarProductosAlPedido($request, $response, $args) {
+        $jsonData = $request->getBody()->getContents();
+        $data = json_decode($jsonData, true);
+    
+        $codigoPedido = $data['codigo_pedido'];
+        $productos = $data['productos'];
+
+        $pedido = Pedido::TraerUnPedidoPorCodigo($codigoPedido);
+        if (!$pedido) {
+            $response->getBody()->write(json_encode(['success' => false, 'codigo_pedido' => $codigoPedido,'message' => 'El pedido no existe']));
+            return $response->withHeader('Content-Type', 'application/json');
+        } 
+       
+        foreach ($productos as $item) {
+        
+            $producto = Producto::TraerUnProducto($item["id"]);
+            $values[] = "({$item['id']}, $pedido->id)";
+
+            if (!$producto) {
+                $response->getBody()->write(json_encode(['success' => false, 'id_producto' => $item["id"],'message' => 'El producto no existe']));
+                return $response->withHeader('Content-Type', 'application/json');
+            } 
+        }      
+        $valuesString = implode(", ", $values);
+        $agregarProducto = Pedido::InsertarProductosAPedido($valuesString);
+
+        if($agregarProducto){
+            $response->getBody()->write(json_encode(['success' => true, 'pedido' => $codigoPedido ,'message' => 'Productos agregados al pedido']));
+        }else{
+            $response->getBody()->write(json_encode(['success' => false, 'pedido' => $codigoPedido ,'message' => 'Problema a la hora de agregar los productos.']));
+        }
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function listarProductosPorPedido($request, $response, $args) {
+        $codigoPedido = $args['codigo_pedido'];    
+        
+        $pedido = Pedido::TraerUnPedidoPorCodigo($codigoPedido);
+        if (!$pedido) {
+            $response->getBody()->write(json_encode(['success' => false, 'codigo_pedido' => $codigoPedido,'message' => 'El pedido no existe']));
+            return $response->withHeader('Content-Type', 'application/json');
+        } 
+        
+        $listaProductos = Pedido::ObtenerProductosPorPedido($pedido->id);
+        
+        if (!$listaProductos) {
+            $response->getBody()->write(json_encode(['success' => false,'pedido' => $codigoPedido ,'message' => 'No hay productos para el pedido especificado']));
+        } else {            
+            foreach($listaProductos as $id){           
+                $producto = Producto::TraerUnProducto($id);
+                $arrayProducto[] = [
+                    'id' => $id,
+                    'nombre' => $producto->nombre,
+                    'precio' => $producto->precio
+                ];
+            }
+            $response->getBody()->write(json_encode(['success' => true, 'pedido' => $codigoPedido ,'productos' => $arrayProducto]));
+        }
+    
+        return $response->withHeader('Content-Type', 'application/json');
     }
 }
 

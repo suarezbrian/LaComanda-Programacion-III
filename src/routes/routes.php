@@ -46,6 +46,11 @@ return function (App $app) {
         $group->get('/getAll', 'PedidoController:listarPedidos');
         $group->delete('/delete/{id}', 'PedidoController:borrarPedido');
         $group->put('/update/{id}', 'PedidoController:modificarPedido');
+        $group->get('/listarPorEstado/{id}', 'PedidoController:listarPedidosPorEstado');
+        $group->post('/asignarEmpleado', 'PedidoController:asignarEmpleadoPedido');
+        $group->get('/listarProductos/{codigo_pedido}', 'PedidoController:listarProductosPorPedido');
+        $group->post('/addProductos', 'PedidoController:agregarProductosAlPedido');
+
     })->add(new AuthMiddleware(['rolValido' => ['admin', 'empleado', 'usuario']]));
 
     $app->group('/api/usuarios', function ($group) {
@@ -55,5 +60,13 @@ return function (App $app) {
         $group->get('/getAll', 'UsuarioController:listarUsuarios');
         $group->delete('/delete/{id}', 'UsuarioController:borrarUsuario');
         $group->put('/update/{id}', 'UsuarioController:modificarUsuario');
+        $group->post('/cargar', 'UsuarioController:cargarUsuarios');
+        $group->get('/descargar', 'UsuarioController:descargarUsuarios');
+
     })->add(new AuthMiddleware(['rolValido' => ['admin']]));
+
+    // LOGINS
+    $app->group('/api/login', function ($group) {
+        $group->post('/usuarios', 'UsuarioController:login');
+    });
 };

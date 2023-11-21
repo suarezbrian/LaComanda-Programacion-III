@@ -16,22 +16,23 @@ class AuthMiddleware
     }
 
     public function __invoke(Request $request, RequestHandler $handler): Response
-    {   
-        $parametros = $request->getQueryParams();
+    {
+        $token = $request->getHeaderLine('Authorization');
+        $esValido = false;
 
-        $idUsuario = $parametros['id_usuario'];
+        try {
+            AutentificadorJWT::VerificarToken($token);
+            $esValido = true;
 
-        if (!is_numeric($idUsuario) || $idUsuario <= 0) {
-            return $this->crearRespuesta('ID de usuario no válido');
+            if ($esValido) {
+                $payload = AutentificadorJWT::ObtenerPayLoad($token);
+
+                return $this->validarRol($request, $handler, $payload->data);
+            }
+
+        } catch (Exception $e) {
+            return $this->crearRespuesta('Token inválido o expirado');
         }
-
-        $usuario = Usuario::TraerUnUsuario($idUsuario);
-
-        if (!$usuario) {
-            return $this->crearRespuesta('Usuario no encontrado');
-        }
-
-        return $this->validarRol($request, $handler, $usuario);
     }
     
     private function validarRol(Request $request, RequestHandler $handler, $usuario): Response
@@ -39,7 +40,7 @@ class AuthMiddleware
         $rolValido = $this->config['rolValido'] ?? '';
         $rolUsuario = Rol::TraerUnRol($usuario->id_rol)->nombre;
       
-        if (in_array(strtolower($rolUsuario), array_map('strtolower', $rolValido))) {
+        if (in_array(strtolower($rolUsuario), array_map('strtolower', $rolValido))) {            
             return $handler->handle($request);
         }
     

@@ -1,0 +1,11 @@
+id,id_rol,nombre,pass,activo
+8,1,bsuarez,12345,0
+39,2,Usuario1,clave123,0
+40,1,Usuario2,clave456,0
+41,3,Usuario3,clave789,0
+42,1,Usuario4,claveABC,0
+43,2,Usuario5,claveDEF,0
+44,3,Usuario6,claveGHI,0
+45,1,Usuario7,claveJKL,0
+46,2,Usuario8,claveMNO,0
+47,1,Usuario10,claveSTU,0

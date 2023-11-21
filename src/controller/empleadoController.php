@@ -10,15 +10,30 @@ class EmpleadoController {
         $nombre = $data['nombre'];
         $rol = $data['rol'];
         $contacto = $data['contacto'];
+
+        if (empty($nombre) || empty($rol) || empty($contacto)) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Todos los campos deben completarse']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
        
         $emp = new Empleado();
         $emp->nombre = $nombre;
         $emp->rol = $rol;
         $emp->contacto = $contacto;
-        
+        $emp->activo = 0;
+        $ahora = time();
+        $dateFormatted = date('Y-m-d H:i:s', $ahora);
+        $emp->fecha_creacion = $dateFormatted;     
+
         $result = $emp->InsertarEmpleadoParametros();
 
-        $response->getBody()->write(json_encode(['success' => $result ? true : false]));    
+        if ($result > 0) {
+            $response->getBody()->write(json_encode(['success' => true, 'id_empleado' => $result,'nombre_empleado' => $emp->nombre
+            ,'message' => 'El empleado fue agregado de forma exitosa.']));
+        } else {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se pudo agregar el empleado.']));   
+        } 
+
         return $response->withHeader('Content-Type', 'application/json');
     }
 
@@ -28,7 +43,7 @@ class EmpleadoController {
         $empleados = Empleado::TraerUnEmpleado($id);
         
         if($empleados === false) {
-            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No existe ese id']));
+            $response->getBody()->write(json_encode(['success' => false, 'id_empleado' => $id,'message' => 'El empleado no existe o esta dado de baja.']));
             return $response->withHeader('Content-Type', 'application/json');
         }
         
@@ -38,21 +53,34 @@ class EmpleadoController {
 
     public function listarEmpleados($request, $response, $args) {
         $empleados = Empleado::TraerTodoLosEmpleado();
-
-        $response->getBody()->write(json_encode($empleados));    
+ 
+        if ( count($empleados) > 0) {
+            $response->getBody()->write(json_encode($empleados)); 
+        } else {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No hay ningun empleado activo registrado.']));   
+        } 
+           
         return $response->withHeader('Content-Type', 'application/json');
     }
 
     public function borrarEmpleado($request, $response, $args) {
-        $id = $args['id'];
+        $id = $args['id'];  
+
+        $empleado = Empleado::TraerUnEmpleado($id);
+       
+        if($empleado === false) {
+            $response->getBody()->write(json_encode(['success' => false, 'id_empleado' => $id,'message' => 'El empleado no existe o esta dado de baja.']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
         $emp = new Empleado();
         $emp->id = $id;
-        $result = $emp->BorrarEmpleado();
+        $result = $emp->BajaLogicaDeLaDB($id);
 
         if ($result > 0) {
-            $response->getBody()->write(json_encode(['success' => true, 'message' => 'Empleado eliminado']));
+            $response->getBody()->write(json_encode(['success' => true,'nombre' => $empleado->nombre ,'message' => 'El empleado fue dado de baja de forma correcta.']));
         } else {
-            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se encontró el empleado']));   
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se encontró el empleado o ya esta dado de baja.']));   
         }    
         return $response->withHeader('Content-Type', 'application/json');
     }
@@ -76,13 +104,13 @@ class EmpleadoController {
         $emp->nombre = $nombre;
         $emp->rol = $rol;
         $emp->contacto = $contacto;
-        
+       
         $result = $emp->ModificarEmpleadoParametros();
-            
+       
         if ($result) {
-            $response->getBody()->write(json_encode(['success' => true, 'message' => 'Empleado modificado']));
+            $response->getBody()->write(json_encode(['success' => true, 'id_empleado' => $id,'message' => 'Empleado modificado de forma correcta.']));
         } else {
-            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se encontró el empleado']));
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se encontró el empleado o está dado de baja.']));
         }    
         return $response->withHeader('Content-Type', 'application/json');
     }
