@@ -25,7 +25,7 @@ class Pedido
     public static function TraerTodosLosPedidos()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, id_mesa, id_empleado, codigo, id_estado, tiempo_estimado FROM pedidos");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM pedidos");
         $consulta->execute();
         return $consulta->fetchAll(PDO::FETCH_CLASS, "Pedido");
     }
@@ -33,7 +33,7 @@ class Pedido
     public static function TraerUnPedido($id)
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, id_mesa, id_empleado, codigo, id_estado, tiempo_estimado FROM pedidos where id = :id");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM pedidos where id = :id");
         $consulta->bindValue(':id', $id, PDO::PARAM_INT);
         $consulta->execute();
         $pedidoBuscado = $consulta->fetchObject('Pedido');
@@ -44,7 +44,7 @@ class Pedido
     public static function TraerUnPedidoPorCodigo($codigo_pedido)
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, id_mesa, id_empleado, codigo, id_estado, tiempo_estimado FROM pedidos where codigo = :codigo_pedido");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM pedidos where codigo = :codigo_pedido");
         $consulta->bindValue(':codigo_pedido', $codigo_pedido, PDO::PARAM_STR);
         $consulta->execute();
         $pedidoBuscado = $consulta->fetchObject('Pedido');
@@ -71,12 +71,20 @@ class Pedido
         return $this->id;
     }
 
-    public static function CambiarEstadoPedido($codigo_pedido, $id_estado){       
+    public static function CambiarEstadoPedido($codigo_pedido, $id_estado, $tiempoRetraso){       
 
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET id_estado = :id_estado WHERE codigo = :codigo_pedido");  
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET id_estado = :id_estado, fecha_entrega = :fecha_entrega, tiempo_retraso = :tiempo_retraso WHERE codigo = :codigo_pedido");  
         $consulta->bindValue(':codigo_pedido', $codigo_pedido, PDO::PARAM_STR);     
         $consulta->bindValue(':id_estado', $id_estado, PDO::PARAM_INT);
+        if($tiempoRetraso === null){
+            $dateFormatted = null;
+        }else{
+            $ahora = time();
+            $dateFormatted = date('Y-m-d H:i:s', $ahora);
+        }
+        $consulta->bindValue(':fecha_entrega', $dateFormatted, PDO::PARAM_STR);
+        $consulta->bindValue(':tiempo_retraso', $tiempoRetraso, PDO::PARAM_STR);
         $resultado = $consulta->execute();
 
         $filasAfectadas = $consulta->rowCount();
@@ -108,7 +116,7 @@ class Pedido
 
     public static function TraerPedidosPorEstado($estado_pedido) {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, id_mesa, id_empleado, codigo, id_estado, tiempo_estimado FROM pedidos WHERE id_estado = :estado_pedido");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM pedidos WHERE id_estado = :estado_pedido");
         $consulta->bindValue(':estado_pedido', $estado_pedido, PDO::PARAM_INT);
         $consulta->execute();
         return $consulta->fetchAll(PDO::FETCH_CLASS, "Pedido");
@@ -117,10 +125,13 @@ class Pedido
     public function AsignarEmpleado($idEmpleado, $tiempoEstimado, $codigoPedido)
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET id_empleado = :idEmpleado, tiempo_estimado = :tiempoEstimado, id_estado = 2 WHERE codigo = :codigoPedido AND id_estado = 1");
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET id_empleado = :idEmpleado, tiempo_estimado = :tiempoEstimado, id_estado = 2, fecha_inicio = :fecha_inicio WHERE codigo = :codigoPedido AND id_estado = 2");
         $consulta->bindValue(':codigoPedido', $codigoPedido, PDO::PARAM_STR);
         $consulta->bindValue(':idEmpleado', $idEmpleado, PDO::PARAM_INT);
         $consulta->bindValue(':tiempoEstimado', $tiempoEstimado, PDO::PARAM_INT);
+        $ahora = time();
+        $dateFormatted = date('Y-m-d H:i:s', $ahora);
+        $consulta->bindValue(':fecha_inicio', $dateFormatted, PDO::PARAM_STR);
         $resultado = $consulta->execute();
 
         $filasAfectadas = $consulta->rowCount();
@@ -140,7 +151,18 @@ class Pedido
         if ($filasAfectadas === 0 || !$resultado) {
             return false;
         }
+
         return true;        
+    }
+
+    public static function IncrementarCantPedido($valores) {
+
+        foreach ($valores as $item) {        
+            $objetoAccesoDato = db::ObjetoAcceso();
+            $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE productos SET cant_pedido = cant_pedido + 1 WHERE id = :productoId");
+            $consulta->bindValue(':productoId', $item, PDO::PARAM_INT);
+            $consulta->execute();
+        }
     }
 
     public static function ObtenerProductosPorPedido($idPedido)
@@ -159,4 +181,24 @@ class Pedido
         $idsProductos = array_column($resultados, 'id_producto');
         return $idsProductos;
     }
+
+    public static function ObtenerPedidosConRetraso()
+    {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM pedidos WHERE tiempo_retraso != '00:00:00'");
+        $consulta->execute();
+
+        return $consulta->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    public static function ObtenerPedidosSinRetraso()
+    {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM pedidos WHERE tiempo_retraso = '00:00:00'");
+        $consulta->execute();
+
+        return $consulta->fetchAll(PDO::FETCH_OBJ);
+    }
+
+
 }

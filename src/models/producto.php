@@ -69,4 +69,38 @@ class Producto
         $consulta->execute();
         return $consulta->rowCount();
     }
+
+    public static function ObtenerProductosMasPedido() {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT *
+        FROM productos
+        WHERE cant_pedido = (
+            SELECT cant_pedido
+            FROM productos
+            ORDER BY cant_pedido DESC
+            LIMIT 1
+        )
+        ORDER BY cant_pedido DESC");
+        $consulta->execute();
+        $productosMasPedido = $consulta->fetchAll(PDO::FETCH_CLASS, 'Producto');
+
+        return $productosMasPedido;
+    }
+
+    public static function ObtenerProductosMenosPedido() {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT *
+        FROM productos
+        WHERE cant_pedido = (
+            SELECT cant_pedido
+            FROM productos
+            ORDER BY cant_pedido ASC
+            LIMIT 1
+        )
+        ORDER BY cant_pedido ASC");
+        $consulta->execute();
+        $productosMenosPedido = $consulta->fetchAll(PDO::FETCH_CLASS, 'Producto');
+
+        return $productosMenosPedido;
+    }
 }

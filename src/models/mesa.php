@@ -112,8 +112,9 @@ class Mesa
     }
 
     public static function pedidoExistenteEnMesa($id_mesa) {
+
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id_estado FROM pedidos WHERE id_mesa = :id_mesa and activo = 0");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id_estado FROM pedidos WHERE id_mesa = :id_mesa");
         $consulta->bindValue(':id_mesa', $id_mesa, PDO::PARAM_INT);
         $consulta->execute();
     

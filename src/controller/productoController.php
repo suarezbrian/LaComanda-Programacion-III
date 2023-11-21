@@ -79,4 +79,29 @@ class ProductoController {
         }    
         return $response->withHeader('Content-Type', 'application/json');
     }
+
+    public function productosMasVendidos($request, $response, $args) {
+        $productosMasVendidos = Producto::ObtenerProductosMasPedido();
+
+        if (!$productosMasVendidos) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se encontraron productos más vendidos']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
+        $response->getBody()->write(json_encode(['success' => true, 'productos' => $productosMasVendidos]));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function productosMenosVendidos($request, $response, $args) {
+        $productosMenosVendidos = Producto::ObtenerProductosMenosPedido();
+
+        if (!$productosMenosVendidos) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se encontraron productos menos vendidos']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
+        $response->getBody()->write(json_encode(['success' => true, 'productos' => $productosMenosVendidos]));
+        return $response->withHeader('Content-Type', 'application/json');
+
+    }
 }

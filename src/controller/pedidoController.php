@@ -4,6 +4,7 @@ include_once  __DIR__ . '/../models/mesa.php';
 include_once  __DIR__ . '/../models/empleado.php';
 include_once  __DIR__ . '/../models/pedido.php';
 include_once  __DIR__ . '/../models/producto.php';
+include_once  __DIR__ . '/../models/rol.php';
 include_once  __DIR__ . '/../models/estadoPedido.php';
 
 class PedidoController {
@@ -13,17 +14,16 @@ class PedidoController {
     
         $id_mesa = $data['id_mesa'];
         $codigo = $data['codigo'];
-        $id_estado = 1; // 1= PENDIENTE.        
-        
+        $id_estado = 7; // 7= PIDIENDO.  
+
         $validar = $this->validarDatos($data, $response);
-        
+
         if($validar){
             
             $pedido = new Pedido(); 
             $pedido->id_mesa = $id_mesa;
             $pedido->codigo = $codigo;
             $pedido->id_estado = $id_estado;
-          
             $estadoMesa = Mesa::CambiarEstadoMesa($pedido->id_mesa, 6);
 
             $result = $pedido->InsertarPedido();
@@ -45,7 +45,7 @@ class PedidoController {
         $id_mesa = $data['id_mesa'];
         $codigo = $data['codigo'];
         $id_estado = 1;
-
+        
         if (empty($id_mesa) || empty($codigo)) {
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'Ningún campo puede ser nulo.']));
             return false;
@@ -173,17 +173,34 @@ class PedidoController {
         $codigo_pedido = $request->getAttribute('codigo_pedido');
         $id_estado = $request->getAttribute('id_estado');  
 
+
         $pedido = Pedido::TraerUnPedidoPorCodigo($codigo_pedido);
         $nombreEstado = EstadoPedido::TraerUnEstadoPedido($pedido->id_estado);
-        $cambiarPedido = Pedido::CambiarEstadoPedido($codigo_pedido, $id_estado);
+
+        
+        $ahora = new DateTime();
+        $fechaInicio = new DateTime($pedido->fecha_inicio);
+        $diferencia = $ahora->getTimestamp() - $fechaInicio->getTimestamp();
+
+        if ($diferencia > $pedido->tiempo_estimado) {
+            $tiempoRetraso = $diferencia - $pedido->tiempo_estimado;            
+            $retraso = date('H:i:s', $tiempoRetraso);
+        } else {
+            $retraso = '00:00:00';
+        }
+
+        $cambiarPedido = Pedido::CambiarEstadoPedido($codigo_pedido, $id_estado, $retraso);
+        $nombreEstado = EstadoPedido::TraerUnEstadoPedido($id_estado); 
 
         if(!$cambiarPedido){
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se pudo cambiar el estado del pedido.']));                       
         }else{
           
-            if($id_estado === 4){               
+            if($id_estado === 4)
+            {               
                 $estadoMesa = Mesa::CambiarEstadoMesa($pedido->id_mesa, 5);       
-            }else{
+            }
+            if($id_estado === 3){
                 $estadoMesa = Mesa::CambiarEstadoMesa($pedido->id_mesa, 6);               
             }
             $response->getBody()->write(json_encode(['success' => true, 'message' => 'Estado del pedido modificado a .' . $nombreEstado->nombre]));  
@@ -241,7 +258,15 @@ class PedidoController {
             return $response->withHeader('Content-Type', 'application/json');
         }
 
+        $producto = Pedido::ObtenerProductosPorPedido($pedido->id);
+
+        if (empty($producto)) {
+            $response->getBody()->write(json_encode(['success' => false, 'codigo' => $codigoPedido,'message' => 'Aún no se pidieron los productos, para este pedido.']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
         $result = $pedido->AsignarEmpleado($idEmpleado, $tiempoEstimado, $codigoPedido);
+
 
         if ($result) {
             $response->getBody()->write(json_encode(['success' => true, 'codigo' => $codigoPedido, 'empleado' => $empleado->nombre, 'timepo_estimado' => $tiempoEstimado,
@@ -266,10 +291,16 @@ class PedidoController {
             $response->getBody()->write(json_encode(['success' => false, 'codigo_pedido' => $codigoPedido,'message' => 'El pedido no existe']));
             return $response->withHeader('Content-Type', 'application/json');
         } 
+
+        if($pedido->id_estado === 3){
+            $response->getBody()->write(json_encode(['success' => false, 'codigo_pedido' => $codigoPedido,'message' => 'No puedes agregar productos a pedidos entregados.']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
        
         foreach ($productos as $item) {
         
             $producto = Producto::TraerUnProducto($item["id"]);
+            $idsProducto[] = $item['id'];
             $values[] = "({$item['id']}, $pedido->id)";
 
             if (!$producto) {
@@ -279,6 +310,8 @@ class PedidoController {
         }      
         $valuesString = implode(", ", $values);
         $agregarProducto = Pedido::InsertarProductosAPedido($valuesString);
+        $contProducto = Pedido::IncrementarCantPedido($idsProducto);
+        $estadoPedido = Pedido::CambiarEstadoPedido($pedido->codigo, 2, null);
 
         if($agregarProducto){
             $response->getBody()->write(json_encode(['success' => true, 'pedido' => $codigoPedido ,'message' => 'Productos agregados al pedido']));
@@ -313,6 +346,32 @@ class PedidoController {
             $response->getBody()->write(json_encode(['success' => true, 'pedido' => $codigoPedido ,'productos' => $arrayProducto]));
         }
     
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function pedidosConRetraso($request, $response, $args)
+    {
+        $pedidosConRetraso = Pedido::ObtenerPedidosConRetraso();
+
+        if (!$pedidosConRetraso) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se encontraron pedidos con retraso']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
+        $response->getBody()->write(json_encode(['success' => true, 'pedidos' => $pedidosConRetraso]));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function pedidosSinRetraso($request, $response, $args)
+    {
+        $pedidosSinRetraso = Pedido::ObtenerPedidosSinRetraso();
+
+        if (!$pedidosSinRetraso) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se encontraron pedidos sin retraso']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
+        $response->getBody()->write(json_encode(['success' => true, 'pedidos' => $pedidosSinRetraso]));
         return $response->withHeader('Content-Type', 'application/json');
     }
 }

@@ -36,6 +36,8 @@ return function (App $app) {
         $group->get('/get/{id}', 'ProductoController:buscarProductoPorId');
         $group->delete('/delete/{id}', 'ProductoController:borrarProducto');
         $group->put('/update/{id}', 'ProductoController:modificarProducto');
+        $group->get('/masVendidos', 'ProductoController:productosMasVendidos');
+        $group->get('/menosVendidos', 'ProductoController:productosMenosVendidos');
     })->add(new AuthMiddleware(['rolValido' => ['admin', 'empleado']]));
 
     $app->group('/api/pedidos', function ($group) {
@@ -50,6 +52,8 @@ return function (App $app) {
         $group->post('/asignarEmpleado', 'PedidoController:asignarEmpleadoPedido');
         $group->get('/listarProductos/{codigo_pedido}', 'PedidoController:listarProductosPorPedido');
         $group->post('/addProductos', 'PedidoController:agregarProductosAlPedido');
+        $group->get('/conRetraso', 'PedidoController:pedidosConRetraso');
+        $group->get('/sinRetraso', 'PedidoController:pedidosSinRetraso');
 
     })->add(new AuthMiddleware(['rolValido' => ['admin', 'empleado', 'usuario']]));
 

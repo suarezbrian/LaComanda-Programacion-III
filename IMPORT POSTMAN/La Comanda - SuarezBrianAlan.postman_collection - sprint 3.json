@@ -1437,6 +1437,150 @@
 					"response": []
 				},
 				{
+					"name": "obtener producto mas vendido",
+					"request": {
+						"auth": {
+							"type": "jwt",
+							"jwt": [
+								{
+									"key": "secret",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "isSecretBase64Encoded",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "header",
+									"value": "{}",
+									"type": "string"
+								},
+								{
+									"key": "algorithm",
+									"value": "HS256",
+									"type": "string"
+								},
+								{
+									"key": "payload",
+									"value": "{}",
+									"type": "string"
+								},
+								{
+									"key": "headerPrefix",
+									"value": "Bearer",
+									"type": "string"
+								},
+								{
+									"key": "queryParamKey",
+									"value": "token",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDA1MTA2NjQsImV4cCI6MTcwMDU3MDY2NCwiYXVkIjoiZjkyNGI0OWUwNDU3ODQ1MjBiMDI4NGRjNzJlZjI2ZGFhZmFjZjQ3YSIsImRhdGEiOnsiaWRfdXN1YXJpbyI6MSwiaWRfcm9sIjoxLCJub21icmUiOiJic3VhcmV6In0sImFwcCI6IkxhIENvbWFuZGEgSldUIn0.xDVCaFOvGPrVIpWEacGPaBVBLaCosjH2aWiiw2S1j9o",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8888/api/productos/masVendidos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"api",
+								"productos",
+								"masVendidos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "obtener producto menos vendido Copy",
+					"request": {
+						"auth": {
+							"type": "jwt",
+							"jwt": [
+								{
+									"key": "secret",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "isSecretBase64Encoded",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "header",
+									"value": "{}",
+									"type": "string"
+								},
+								{
+									"key": "algorithm",
+									"value": "HS256",
+									"type": "string"
+								},
+								{
+									"key": "payload",
+									"value": "{}",
+									"type": "string"
+								},
+								{
+									"key": "headerPrefix",
+									"value": "Bearer",
+									"type": "string"
+								},
+								{
+									"key": "queryParamKey",
+									"value": "token",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDA1MTA2NjQsImV4cCI6MTcwMDU3MDY2NCwiYXVkIjoiZjkyNGI0OWUwNDU3ODQ1MjBiMDI4NGRjNzJlZjI2ZGFhZmFjZjQ3YSIsImRhdGEiOnsiaWRfdXN1YXJpbyI6MSwiaWRfcm9sIjoxLCJub21icmUiOiJic3VhcmV6In0sImFwcCI6IkxhIENvbWFuZGEgSldUIn0.xDVCaFOvGPrVIpWEacGPaBVBLaCosjH2aWiiw2S1j9o",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8888/api/productos/menosVendidos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"api",
+								"productos",
+								"menosVendidos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "borrar producto",
 					"request": {
 						"method": "DELETE",
@@ -1580,7 +1724,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDA0NDY1MzMsImV4cCI6MTcwMDUwNjUzMywiYXVkIjoiZjkyNGI0OWUwNDU3ODQ1MjBiMDI4NGRjNzJlZjI2ZGFhZmFjZjQ3YSIsImRhdGEiOnsiaWRfdXN1YXJpbyI6MSwiaWRfcm9sIjoxLCJub21icmUiOiJic3VhcmV6In0sImFwcCI6IkxhIENvbWFuZGEgSldUIn0.ibGyGyPf5ovHoTXzJbgx-8V_3hKCemXawh9jq_7JdZ4",
+								"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDA1MTA2NjQsImV4cCI6MTcwMDU3MDY2NCwiYXVkIjoiZjkyNGI0OWUwNDU3ODQ1MjBiMDI4NGRjNzJlZjI2ZGFhZmFjZjQ3YSIsImRhdGEiOnsiaWRfdXN1YXJpbyI6MSwiaWRfcm9sIjoxLCJub21icmUiOiJic3VhcmV6In0sImFwcCI6IkxhIENvbWFuZGEgSldUIn0.xDVCaFOvGPrVIpWEacGPaBVBLaCosjH2aWiiw2S1j9o",
 								"type": "text"
 							}
 						],
@@ -1589,12 +1733,12 @@
 							"formdata": [
 								{
 									"key": "id_mesa",
-									"value": "26",
+									"value": "32",
 									"type": "text"
 								},
 								{
 									"key": "codigo",
-									"value": "P011",
+									"value": "P012",
 									"type": "text"
 								}
 							]
@@ -1667,7 +1811,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDA0NDY1MzMsImV4cCI6MTcwMDUwNjUzMywiYXVkIjoiZjkyNGI0OWUwNDU3ODQ1MjBiMDI4NGRjNzJlZjI2ZGFhZmFjZjQ3YSIsImRhdGEiOnsiaWRfdXN1YXJpbyI6MSwiaWRfcm9sIjoxLCJub21icmUiOiJic3VhcmV6In0sImFwcCI6IkxhIENvbWFuZGEgSldUIn0.ibGyGyPf5ovHoTXzJbgx-8V_3hKCemXawh9jq_7JdZ4",
+								"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDA1MTA2NjQsImV4cCI6MTcwMDU3MDY2NCwiYXVkIjoiZjkyNGI0OWUwNDU3ODQ1MjBiMDI4NGRjNzJlZjI2ZGFhZmFjZjQ3YSIsImRhdGEiOnsiaWRfdXN1YXJpbyI6MSwiaWRfcm9sIjoxLCJub21icmUiOiJic3VhcmV6In0sImFwcCI6IkxhIENvbWFuZGEgSldUIn0.xDVCaFOvGPrVIpWEacGPaBVBLaCosjH2aWiiw2S1j9o",
 								"type": "text"
 							}
 						],
@@ -1676,17 +1820,17 @@
 							"formdata": [
 								{
 									"key": "id_empleado",
-									"value": "8",
+									"value": "18",
 									"type": "text"
 								},
 								{
 									"key": "tiempo_estimado",
-									"value": "1000",
+									"value": "960",
 									"type": "text"
 								},
 								{
 									"key": "codigo_pedido",
-									"value": "P011",
+									"value": "P012",
 									"type": "text"
 								}
 							]
@@ -1765,7 +1909,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"codigo_pedido\": \"P011\",\r\n  \"productos\": [\r\n    { \"id\": 1 },\r\n    { \"id\": 2 },\r\n    { \"id\": 3 }\r\n  ]\r\n}"
+							"raw": "{\r\n  \"codigo_pedido\": \"P012\",\r\n  \"productos\": [\r\n    { \"id\": 1 },\r\n    { \"id\": 2 },\r\n    { \"id\": 3 }\r\n  ]\r\n}"
 						},
 						"url": {
 							"raw": "http://localhost:8888/api/pedidos/addProductos",
@@ -1806,6 +1950,150 @@
 									"key": "id_usuario",
 									"value": "1"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "obtener pedido con retraso",
+					"request": {
+						"auth": {
+							"type": "jwt",
+							"jwt": [
+								{
+									"key": "secret",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "isSecretBase64Encoded",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "header",
+									"value": "{}",
+									"type": "string"
+								},
+								{
+									"key": "algorithm",
+									"value": "HS256",
+									"type": "string"
+								},
+								{
+									"key": "payload",
+									"value": "{}",
+									"type": "string"
+								},
+								{
+									"key": "headerPrefix",
+									"value": "Bearer",
+									"type": "string"
+								},
+								{
+									"key": "queryParamKey",
+									"value": "token",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDA1MTA2NjQsImV4cCI6MTcwMDU3MDY2NCwiYXVkIjoiZjkyNGI0OWUwNDU3ODQ1MjBiMDI4NGRjNzJlZjI2ZGFhZmFjZjQ3YSIsImRhdGEiOnsiaWRfdXN1YXJpbyI6MSwiaWRfcm9sIjoxLCJub21icmUiOiJic3VhcmV6In0sImFwcCI6IkxhIENvbWFuZGEgSldUIn0.xDVCaFOvGPrVIpWEacGPaBVBLaCosjH2aWiiw2S1j9o",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8888/api/pedidos/conRetraso",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"api",
+								"pedidos",
+								"conRetraso"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "obtener pedido sin retraso",
+					"request": {
+						"auth": {
+							"type": "jwt",
+							"jwt": [
+								{
+									"key": "secret",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "isSecretBase64Encoded",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "header",
+									"value": "{}",
+									"type": "string"
+								},
+								{
+									"key": "algorithm",
+									"value": "HS256",
+									"type": "string"
+								},
+								{
+									"key": "payload",
+									"value": "{}",
+									"type": "string"
+								},
+								{
+									"key": "headerPrefix",
+									"value": "Bearer",
+									"type": "string"
+								},
+								{
+									"key": "queryParamKey",
+									"value": "token",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDA1MTA2NjQsImV4cCI6MTcwMDU3MDY2NCwiYXVkIjoiZjkyNGI0OWUwNDU3ODQ1MjBiMDI4NGRjNzJlZjI2ZGFhZmFjZjQ3YSIsImRhdGEiOnsiaWRfdXN1YXJpbyI6MSwiaWRfcm9sIjoxLCJub21icmUiOiJic3VhcmV6In0sImFwcCI6IkxhIENvbWFuZGEgSldUIn0.xDVCaFOvGPrVIpWEacGPaBVBLaCosjH2aWiiw2S1j9o",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8888/api/pedidos/sinRetraso",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"api",
+								"pedidos",
+								"sinRetraso"
 							]
 						}
 					},
@@ -1966,7 +2254,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDA0NDY1MzMsImV4cCI6MTcwMDUwNjUzMywiYXVkIjoiZjkyNGI0OWUwNDU3ODQ1MjBiMDI4NGRjNzJlZjI2ZGFhZmFjZjQ3YSIsImRhdGEiOnsiaWRfdXN1YXJpbyI6MSwiaWRfcm9sIjoxLCJub21icmUiOiJic3VhcmV6In0sImFwcCI6IkxhIENvbWFuZGEgSldUIn0.ibGyGyPf5ovHoTXzJbgx-8V_3hKCemXawh9jq_7JdZ4",
+								"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDA1MTA2NjQsImV4cCI6MTcwMDU3MDY2NCwiYXVkIjoiZjkyNGI0OWUwNDU3ODQ1MjBiMDI4NGRjNzJlZjI2ZGFhZmFjZjQ3YSIsImRhdGEiOnsiaWRfdXN1YXJpbyI6MSwiaWRfcm9sIjoxLCJub21icmUiOiJic3VhcmV6In0sImFwcCI6IkxhIENvbWFuZGEgSldUIn0.xDVCaFOvGPrVIpWEacGPaBVBLaCosjH2aWiiw2S1j9o",
 								"type": "text"
 							}
 						],
@@ -2106,14 +2394,65 @@
 				{
 					"name": "cambiar estado del pedido",
 					"request": {
+						"auth": {
+							"type": "jwt",
+							"jwt": [
+								{
+									"key": "secret",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "isSecretBase64Encoded",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "header",
+									"value": "{}",
+									"type": "string"
+								},
+								{
+									"key": "algorithm",
+									"value": "HS256",
+									"type": "string"
+								},
+								{
+									"key": "payload",
+									"value": "{}",
+									"type": "string"
+								},
+								{
+									"key": "headerPrefix",
+									"value": "Bearer",
+									"type": "string"
+								},
+								{
+									"key": "queryParamKey",
+									"value": "token",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MDA1MTA2NjQsImV4cCI6MTcwMDU3MDY2NCwiYXVkIjoiZjkyNGI0OWUwNDU3ODQ1MjBiMDI4NGRjNzJlZjI2ZGFhZmFjZjQ3YSIsImRhdGEiOnsiaWRfdXN1YXJpbyI6MSwiaWRfcm9sIjoxLCJub21icmUiOiJic3VhcmV6In0sImFwcCI6IkxhIENvbWFuZGEgSldUIn0.xDVCaFOvGPrVIpWEacGPaBVBLaCosjH2aWiiw2S1j9o",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "    {\r\n        \"codigo_pedido\": \"P011\",\r\n        \"id_estado\": 4\r\n    }"
+							"raw": "    {\r\n        \"codigo_pedido\": \"P012\",\r\n        \"id_estado\": 3\r\n    }"
 						},
 						"url": {
-							"raw": "http://localhost:8888/api/pedidos/cambiarEstado?id_usuario=1",
+							"raw": "http://localhost:8888/api/pedidos/cambiarEstado",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -2123,12 +2462,6 @@
 								"api",
 								"pedidos",
 								"cambiarEstado"
-							],
-							"query": [
-								{
-									"key": "id_usuario",
-									"value": "1"
-								}
 							]
 						}
 					},
