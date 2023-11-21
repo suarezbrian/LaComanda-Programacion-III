@@ -5,25 +5,15 @@ include_once  __DIR__ . '/../models/empleado.php';
 class EmpleadoController {
 
     public function insertarEmpleado($request, $response, $args) {
-        $data = $request->getParsedBody();
-    
-        $nombre = $data['nombre'];
-        $rol = $data['rol'];
-        $contacto = $data['contacto'];
 
-        if (empty($nombre) || empty($rol) || empty($contacto)) {
-            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Todos los campos deben completarse']));
-            return $response->withHeader('Content-Type', 'application/json');
-        }
-       
         $emp = new Empleado();
-        $emp->nombre = $nombre;
-        $emp->rol = $rol;
-        $emp->contacto = $contacto;
+        $emp->nombre =  $request->getAttribute('nombre');
+        $emp->rol = $request->getAttribute('rol');
+        $emp->contacto = $request->getAttribute('contacto');
         $emp->activo = 0;
         $ahora = time();
         $dateFormatted = date('Y-m-d H:i:s', $ahora);
-        $emp->fecha_creacion = $dateFormatted;     
+        $emp->fecha_creacion = $dateFormatted;  
 
         $result = $emp->InsertarEmpleadoParametros();
 
@@ -87,24 +77,13 @@ class EmpleadoController {
 
     public function modificarEmpleado($request, $response, $args) {
         $id = $args['id'];
-        $jsonData = $request->getBody()->getContents();
-        $data = json_decode($jsonData, true);
-
-        $nombre = $data['nombre'];
-        $rol = $data['rol'];
-        $contacto = $data['contacto'];
-        
-        if (empty($nombre) || empty($rol) || empty($contacto)) {
-            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Todos los campos deben completarse']));
-            return $response->withHeader('Content-Type', 'application/json');
-        }
 
         $emp = new Empleado();
         $emp->id = $id;
-        $emp->nombre = $nombre;
-        $emp->rol = $rol;
-        $emp->contacto = $contacto;
-       
+        $emp->nombre =  $request->getAttribute('nombre');
+        $emp->rol = $request->getAttribute('rol');
+        $emp->contacto = $request->getAttribute('contacto');
+
         $result = $emp->ModificarEmpleadoParametros();
        
         if ($result) {

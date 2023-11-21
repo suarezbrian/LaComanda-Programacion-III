@@ -70,17 +70,17 @@
 							"formdata": [
 								{
 									"key": "nombre",
-									"value": "Pedra",
+									"value": "Sofia",
 									"type": "text"
 								},
 								{
 									"key": "rol",
-									"value": "Mozo",
+									"value": "Bartender",
 									"type": "text"
 								},
 								{
 									"key": "contacto",
-									"value": "1123435436",
+									"value": "1126475839",
 									"type": "text"
 								}
 							]
@@ -384,7 +384,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Brian\",\r\n    \"rol\": \"Mozo\",\r\n    \"contacto\": \"1123435434\"\r\n}"
+							"raw": "{\r\n    \"nombre\": \"Brian\",\r\n    \"rol\": \"Mozo\",\r\n    \"contacto\": \"1163435235\"\r\n}"
 						},
 						"url": {
 							"raw": "http://localhost:8888/api/empleados/update/17",
@@ -1022,7 +1022,7 @@
 							"formdata": [
 								{
 									"key": "codigo",
-									"value": "M017",
+									"value": "M030",
 									"type": "text"
 								},
 								{
@@ -1264,7 +1264,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"codigo\": \"M0116\",\r\n    \"id_estado\": 6\r\n}"
+							"raw": "{\r\n    \"codigo\": \"M01126\",\r\n    \"id_estado\": 6\r\n}"
 						},
 						"url": {
 							"raw": "http://localhost:8888/api/mesas/update/36",

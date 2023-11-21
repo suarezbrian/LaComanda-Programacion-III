@@ -7,26 +7,29 @@ include_once  __DIR__ . '/../controller/pedidoController.php';
 include_once  __DIR__ . '/../controller/usuarioController.php';
 include_once  __DIR__ . '/../middlewares/AuthMiddleware.php';
 include_once  __DIR__ . '/../middlewares/EstadoPedidoMiddleware.php';
+include_once  __DIR__ . '/../middlewares/ValidacionEmpleadoMiddleware.php';
+include_once  __DIR__ . '/../middlewares/ValidacionMesaMiddleware.php';
+
 
 use Slim\App;
 
 return function (App $app) {
     $app->group('/api/empleados', function ($group) {
         
-        $group->post('/add', 'EmpleadoController:insertarEmpleado');
+        $group->post('/add', 'EmpleadoController:insertarEmpleado')->setName('insertarEmpleado')->add(new ValidacionEmpleadoMiddleware());
         $group->get('/getAll', 'EmpleadoController:listarEmpleados');
         $group->get('/get/{id}', 'EmpleadoController:buscarEmpleadoPorId');
         $group->delete('/delete/{id}', 'EmpleadoController:borrarEmpleado');
-        $group->put('/update/{id}', 'EmpleadoController:modificarEmpleado');
+        $group->put('/update/{id}', 'EmpleadoController:modificarEmpleado')->setName('modificarEmpleado')->add(new ValidacionEmpleadoMiddleware());
     })->add(new AuthMiddleware(['rolValido' => ['admin']]));
 
     $app->group('/api/mesas', function ($group) {
      
-        $group->post('/add', 'MesaController:insertarMesa');
+        $group->post('/add', 'MesaController:insertarMesa')->setName('insertarMesa')->add(new ValidacionMesaMiddleware());
         $group->get('/getAll', 'MesaController:listarMesas');
         $group->get('/get/{id}', 'MesaController:buscarMesaPorId');
         $group->delete('/delete/{id}', 'MesaController:borrarMesa');
-        $group->put('/update/{id}', 'MesaController:modificarMesa');
+        $group->put('/update/{id}', 'MesaController:modificarMesa')->setName('modificarMesa')->add(new ValidacionMesaMiddleware());
     })->add(new AuthMiddleware(['rolValido' => ['admin', 'empleado']]));
 
     $app->group('/api/productos', function ($group) {

@@ -6,34 +6,24 @@ include_once  __DIR__ . '/../controller/PedidoController.php';
 class MesaController {
 
     public function insertarMesa($request, $response, $args) {
-        $data = $request->getParsedBody();
-    
-        $codigo = $data['codigo'];
-        $estado = $data['id_estado'];
-
-        if (empty($codigo) || empty($estado)) {
-            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Todos los campos deben completarse']));
-            return $response->withHeader('Content-Type', 'application/json');
-        }
 
         $pedido = new PedidoController();
-        $validarEstado = $pedido->validarEstadoExistente($estado);
-        $validarMesa = $this->validarMesaExistentePorCodigo($codigo);
+        $validarEstado = $pedido->validarEstadoExistente($request->getAttribute('id_estado'));
+        $validarMesa = $this->validarMesaExistentePorCodigo($request->getAttribute('codigo'));
         
         if(!$validarEstado){
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'El ID estado de la mesa no es válido']));
             return $response->withHeader('Content-Type', 'application/json');
         }
-    
   
-        if($validarMesa->codigo === $codigo){
+        if($validarMesa->codigo === $request->getAttribute('codigo')){
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'El codigo de la mesa ya está registrado.']));
             return $response->withHeader('Content-Type', 'application/json');
         }
 
         $mesa = new Mesa();
-        $mesa->codigo = $codigo;
-        $mesa->id_estado = $estado;
+        $mesa->codigo = $request->getAttribute('codigo');
+        $mesa->id_estado = $request->getAttribute('id_estado');
         
         $result = $mesa->InsertarMesaParametros();
 
@@ -95,16 +85,6 @@ class MesaController {
 
     public function modificarMesa($request, $response, $args) {
         $id = $args['id'];
-        $jsonData = $request->getBody()->getContents();
-        $data = json_decode($jsonData, true);
-
-        $codigo = $data['codigo'];
-        $estado = $data['id_estado'];
-        
-        if (empty($codigo) || empty($estado)) {
-            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Todos los campos deben completarse']));
-            return $response->withHeader('Content-Type', 'application/json');
-        }
 
         $existeMesa = Mesa::TraerUnaMesa($id);
        
@@ -113,7 +93,7 @@ class MesaController {
             return $response->withHeader('Content-Type', 'application/json');
         }
 
-        $existeMesa = Mesa::TraerUnaMesaPorCodigo($codigo);
+        $existeMesa = Mesa::TraerUnaMesaPorCodigo($request->getAttribute('codigo'));
        
         if($existeMesa->id > 0) {
             
@@ -123,9 +103,9 @@ class MesaController {
 
         $mesa = new Mesa();
         $mesa->id = $id;
-        $mesa->codigo = $codigo;
-        $mesa->id_estado = $estado;
-        
+        $mesa->codigo = $request->getAttribute('codigo');
+        $mesa->id_estado = $request->getAttribute('id_estado');
+       
         $result = $mesa->ModificarMesaParametros();
             
         if ($result) {
