@@ -14,10 +14,17 @@ class ProductoController {
         $producto->nombre = $nombre;
         $producto->precio = $precio;
         $producto->categoria = $categoria;
+        $producto->cant_pedido = 0;
         
         $result = $producto->InsertarProductoParametros();
 
-        $response->getBody()->write(json_encode(['success' => $result ? true : false]));    
+
+        if ($result > 0) {
+            $response->getBody()->write(json_encode(['success' => true, 'id_producto' => $result,'nombre_producto' => $producto->nombre
+            ,'message' => 'El producto fue agregado de forma exitosa.']));
+        } else {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se pudo agregar el producto.']));   
+        } 
         return $response->withHeader('Content-Type', 'application/json');
     }
 
@@ -27,7 +34,8 @@ class ProductoController {
         $producto = Producto::TraerUnProducto($id);
         
         if($producto === false) {
-            $producto = ['error' => 'No existe ese id'];
+            $response->getBody()->write(json_encode(['success' => false, 'id_producto' => $id,'message' => 'El producto no existe.']));
+            return $response->withHeader('Content-Type', 'application/json');
         }
         
         $response->getBody()->write(json_encode($producto));    
@@ -45,12 +53,12 @@ class ProductoController {
         $id = $args['id'];
         $producto = new Producto();
         $producto->id = $id;
-        $result = $producto->BorrarProducto();
+        $result = $producto->BajaLogicaProducto();
 
         if ($result > 0) {
             $response->getBody()->write(json_encode(['success' => true, 'message' => 'Producto eliminado']));
         } else {
-            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se encontró el producto']));   
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se pudo eliminar el producto']));   
         }    
         return $response->withHeader('Content-Type', 'application/json');
     }

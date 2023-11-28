@@ -95,10 +95,10 @@ class Pedido
         return $codigo_pedido;
     }
 
-    public function BorrarPedido()
+    public function BajaLogicaPedido()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("DELETE FROM pedidos WHERE id = :id");
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET id_estado = 4 WHERE id = :id");        
         $consulta->bindValue(':id', $this->id, PDO::PARAM_INT);
         $consulta->execute();
         return $consulta->rowCount();

@@ -63,19 +63,21 @@ class PedidoController {
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'El ID estado del pedido no es válido [1 = PENDIENTE, 2 = EN PROCESO, 3 = ENTREGADO, 4 = CANCELADO]']));
             return false;
         }
-        
 
-        if (Pedido::codigoRepetido($codigo)) {
-            $response->getBody()->write(json_encode(['success' => false, 'message' => 'El código del pedido ya está en uso.']));
-            return false;
-        }
-       
+               
         $pedidoExistente = Mesa::pedidoExistenteEnMesa($id_mesa);
         
         if ($pedidoExistente) {
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'Esta mesa no se encuentra disponible.']));
             return false;
         }
+        
+
+        if (Pedido::codigoRepetido($codigo)) {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'El código del pedido ya está en uso.']));
+            return false;
+        }
+
        
         return true;
     }
@@ -131,10 +133,10 @@ class PedidoController {
 
         $pedido = new Pedido();
         $pedido->id = $args['id'];
-        $result = $pedido->BorrarPedido();
+        $result = $pedido->BajaLogicaPedido();
 
         if ($result > 0) {
-            $response->getBody()->write(json_encode(['success' => true, 'message' => 'Pedido eliminado']));
+            $response->getBody()->write(json_encode(['success' => true, 'message' => 'Pedido cancelado.']));
         } else {
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se encontró el pedido']));
         }
@@ -144,27 +146,25 @@ class PedidoController {
     public function modificarPedido($request, $response, $args) {
         $jsonData = $request->getBody()->getContents();
         $data = json_decode($jsonData, true);
+             
       
-        $validar = $this->validarDatos($data, $response);
-       
-        if($validar){
-            $pedido = new Pedido();
-            $pedido->id = $args['id'];
-            $pedido->id_mesa =  $data['id_mesa'];
-            $pedido->id_empleado = $data['id_empleado'];
-            $pedido->codigo = $data['codigo'];
-            $pedido->id_estado = $data['id_estado'];
-            $pedido->tiempo_estimado = $data['tiempo_estimado'];
+        $pedido = new Pedido();
+        $pedido->id = $args['id'];
+        $pedido->id_mesa =  $data['id_mesa'];
+        $pedido->id_empleado = $data['id_empleado'];
+        $pedido->codigo = $data['codigo'];
+        $pedido->id_estado = $data['id_estado'];
+        $pedido->tiempo_estimado = $data['tiempo_estimado'];
 
-            $result = $pedido->ModificarPedidoParametros();
+        $result = $pedido->ModificarPedidoParametros();
 
-            if ($result) {
-                $response->getBody()->write(json_encode(['success' => true, 'message' => 'Pedido modificado']));
-            } else {
-                $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se encontró el pedido']));
-            }
-            return $response->withHeader('Content-Type', 'application/json');
+        if ($result) {
+            $response->getBody()->write(json_encode(['success' => true, 'message' => 'Pedido modificado']));
+        } else {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se encontró el pedido']));
         }
+        return $response->withHeader('Content-Type', 'application/json');
+        
         return $response->withHeader('Content-Type', 'application/json');
     }
 
