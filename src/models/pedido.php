@@ -12,9 +12,8 @@ class Pedido
     public function InsertarPedido()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT INTO pedidos (id_mesa, id_empleado, codigo, id_estado, tiempo_estimado) VALUES (:id_mesa, :id_empleado, :codigo, :id_estado, :tiempo_estimado)");
+        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT INTO pedidos (id_mesa, codigo, id_estado, tiempo_estimado) VALUES (:id_mesa, :codigo, :id_estado, :tiempo_estimado)");
         $consulta->bindValue(':id_mesa', $this->id_mesa, PDO::PARAM_INT);
-        $consulta->bindValue(':id_empleado', $this->id_empleado, PDO::PARAM_INT);
         $consulta->bindValue(':codigo', $this->codigo, PDO::PARAM_STR);
         $consulta->bindValue(':id_estado', $this->id_estado, PDO::PARAM_INT);
         $consulta->bindValue(':tiempo_estimado', $this->tiempo_estimado, PDO::PARAM_STR);
@@ -51,14 +50,23 @@ class Pedido
        
         return $pedidoBuscado;
     }
+    public static function TraerUnPedidoPorIdMesa($id_mesa)
+    {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM pedidos where id_mesa = :id_mesa");
+        $consulta->bindValue(':id_mesa', $id_mesa, PDO::PARAM_STR);
+        $consulta->execute();
+        $pedidoBuscado = $consulta->fetchObject('Pedido');
+       
+        return $pedidoBuscado;
+    }
 
     public function ModificarPedidoParametros()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET id_mesa = :id_mesa, id_empleado = :id_empleado, codigo = :codigo, id_estado = :id_estado, tiempo_estimado = :tiempo_estimado WHERE id = :id");
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET id_mesa = :id_mesa, codigo = :codigo, id_estado = :id_estado, tiempo_estimado = :tiempo_estimado WHERE id = :id");
         $consulta->bindValue(':id', $this->id, PDO::PARAM_INT);
         $consulta->bindValue(':id_mesa', $this->id_mesa, PDO::PARAM_INT);
-        $consulta->bindValue(':id_empleado', $this->id_empleado, PDO::PARAM_INT);
         $consulta->bindValue(':codigo', $this->codigo, PDO::PARAM_STR);
         $consulta->bindValue(':id_estado', $this->id_estado, PDO::PARAM_INT);
         $consulta->bindValue(':tiempo_estimado', $this->tiempo_estimado, PDO::PARAM_STR);
@@ -69,6 +77,53 @@ class Pedido
             return false;
         }
         return $this->id;
+    }
+
+    public function ModificarPedidoTiempoEstimado($tiempoAdicional)
+    {
+        $tiempoEstimadoActual = $this->ObtenerTiempoEstimadoActual();    
+        $nuevoTiempoEstimado = $tiempoEstimadoActual + $tiempoAdicional;
+    
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET tiempo_estimado = :tiempo_estimado WHERE id = :id");
+        $consulta->bindValue(':id', $this->id, PDO::PARAM_INT);
+        $consulta->bindValue(':tiempo_estimado', $nuevoTiempoEstimado, PDO::PARAM_STR);
+        $resultado = $consulta->execute();
+    
+        $filasAfectadas = $consulta->rowCount();
+        if ($filasAfectadas === 0 || !$resultado) {
+            return false;
+        }
+    
+        return $this->id;
+    }
+
+    public function ModificarPedidoFechaInicio($nuevaFechaInicio)
+    {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET fecha_inicio = :fecha_inicio WHERE id = :id");
+        $consulta->bindValue(':id', $this->id, PDO::PARAM_INT);
+        $consulta->bindValue(':fecha_inicio', $nuevaFechaInicio, PDO::PARAM_STR);
+        $resultado = $consulta->execute();
+
+        $filasAfectadas = $consulta->rowCount();
+        if ($filasAfectadas === 0 || !$resultado) {
+            return false;
+        }
+
+        return $this->id;
+    }
+    
+    private function ObtenerTiempoEstimadoActual()
+    {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT tiempo_estimado FROM pedidos WHERE id = :id");
+        $consulta->bindValue(':id', $this->id, PDO::PARAM_INT);
+        $consulta->execute();
+    
+        $tiempoEstimadoActual = $consulta->fetch(PDO::FETCH_ASSOC)['tiempo_estimado'];
+    
+        return $tiempoEstimadoActual;
     }
 
     public static function CambiarEstadoPedido($codigo_pedido, $id_estado, $tiempoRetraso){       
@@ -142,9 +197,9 @@ class Pedido
     }
 
     public static function InsertarProductosAPedido($valuesString)
-    {
-        $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT INTO relacion_pedido_producto (id_producto, id_pedido) VALUES $valuesString");
+    {    
+        $objetoAccesoDato = db::ObjetoAcceso();   
+        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT INTO pedido_producto (id_producto, id_pedido, codigo_preparacion) VALUES $valuesString");
         $resultado = $consulta->execute();
 
         $filasAfectadas = $consulta->rowCount();
@@ -168,7 +223,7 @@ class Pedido
     public static function ObtenerProductosPorPedido($idPedido)
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id_producto FROM relacion_pedido_producto WHERE id_pedido = :idPedido");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id_producto FROM pedido_producto WHERE id_pedido = :idPedido");
         $consulta->bindValue(':idPedido', $idPedido, PDO::PARAM_INT);
         $consulta->execute();
 

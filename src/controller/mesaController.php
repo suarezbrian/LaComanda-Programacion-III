@@ -125,4 +125,103 @@ class MesaController {
             return false; 
         }
     }
+
+    public function modificarEstadoMesa($request, $response, $args) {
+        $jsonData = $request->getBody()->getContents();
+        $data = json_decode($jsonData, true);
+        $id = $args['id'];
+
+        $existeMesa = Mesa::TraerUnaMesa($id);
+       
+        if($existeMesa === false) {
+            $response->getBody()->write(json_encode(['success' => false, 'id_empleado' => $id,'message' => 'la mesa no existe o no esta disponible para el uso.']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
+        if($existeMesa->codigo != $data["codigo"]) {
+            
+            $response->getBody()->write(json_encode(['success' => false, 'id_mesa' => $id,'message' => 'El codigo no corresponde a la mesa.']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
+        $mesa = new Mesa();
+        $mesa->id = $id;
+        $mesa->codigo = $data["codigo"];
+        $mesa->id_estado = $data["id_estado"];
+       
+        $result = $mesa->ModificarMesaParametros();
+            
+        if ($result) {
+            $response->getBody()->write(json_encode(['success' => true, 'message' => 'Estado de la mesa modificada']));
+        } else {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'El estado de la mesa no se modifico']));
+        }    
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function listarMesaYEstado($request, $response, $args) {
+        $mesas = Mesa::TraerTodasLasMesas();
+    
+        if (count($mesas) > 0) {
+            $mesaData = [];
+            foreach ($mesas as $mesa) {
+                $mesaData[] = [
+                    'id' => $mesa->id,
+                    'codigo' => $mesa->codigo,
+                    'id_estado' => $mesa->id_estado,
+                ];
+            }
+            $response->getBody()->write(json_encode(['success' => true, 'mesas' => $mesaData]));
+        } else {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No hay ninguna mesa activa registrada.']));
+        }
+    
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function CalcularImportePedidoPorCodigoMesa($request, $response, $args) {
+        $codigo_mesa = $args['codigo_mesa'];
+
+        $mesa = Mesa::TraerUnaMesaPorCodigo($codigo_mesa);
+        if($mesa === false) {
+            $response->getBody()->write(json_encode(['success' => false, 'codigo_mesa' => $codigo_mesa,'message' => 'la mesa no existe o no esta disponible para el uso.']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
+        $pedido = Pedido::TraerUnPedidoPorIdMesa($mesa->id);
+        if($pedido === false || $pedido->id_estado != 8) {
+            $response->getBody()->write(json_encode(['success' => false, 'id_empleado' => $id,'message' => 'No hay pedidos activos para esta mesa.']));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
+        $productos = ProductoPedido::TraerTodosProducto();     
+        $importeTotal = 0;
+        foreach ($productos as $item) {
+            
+            $producto = Producto::TraerUnProducto($item->id_producto);                        
+            $idsProducto[] = $item->id_producto;
+            $codigo_preparacion = "PROD_".$item->id_producto . $pedido->id;   
+            
+            if($item->codigo_preparacion == $codigo_preparacion){
+                $importeTotal += $producto->precio;                
+            }
+            
+        }
+
+        $response->getBody()->write(json_encode(['success' => true,'message' => 'Importe a cobrar para la mesa.', 'codigo_mesa' => $codigo_mesa, 'importe_total' => $importeTotal]));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function obtenerMesaMasUsada($request, $response, $args)
+    {
+        $mesaMasUsada = Mesa::ObtenerMesaMasUsada();
+        
+        if ($mesaMasUsada->cant_uso != 0) {
+            $response->getBody()->write(json_encode(['success' => true, 'mesa_mas_usada' => $mesaMasUsada]));
+        } else {
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No hay mesas mas usadas disponibles.']));
+        }
+    
+        return $response->withHeader('Content-Type', 'application/json');
+    }
 }

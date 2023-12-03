@@ -8,7 +8,7 @@ class EmpleadoController {
 
         $emp = new Empleado();
         $emp->nombre =  $request->getAttribute('nombre');
-        $emp->rol = $request->getAttribute('rol');
+        $emp->id_usuario = $request->getAttribute('id_usuario');
         $emp->contacto = $request->getAttribute('contacto');
         $emp->activo = 0;
         $ahora = time();
@@ -81,7 +81,6 @@ class EmpleadoController {
         $emp = new Empleado();
         $emp->id = $id;
         $emp->nombre =  $request->getAttribute('nombre');
-        $emp->rol = $request->getAttribute('rol');
         $emp->contacto = $request->getAttribute('contacto');
 
         $result = $emp->ModificarEmpleadoParametros();

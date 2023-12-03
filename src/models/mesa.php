@@ -129,4 +129,23 @@ class Mesa
     
         return false;
     }
+
+    public static function IncrementarCantMesa($codigo) {
+               
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE mesas SET cant_uso = cant_uso + 1 WHERE codigo = :codigo");
+        $consulta->bindValue(':codigo', $codigo, PDO::PARAM_INT);
+        $consulta->execute();
+        
+    }
+
+    public static function ObtenerMesaMasUsada()
+    {                                               
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM mesas ORDER BY cant_uso DESC LIMIT 1");
+        $consulta->execute();
+        $mesaMasUsada = $consulta->fetchObject('Mesa');
+
+        return $mesaMasUsada;
+    }
 }

@@ -4,7 +4,7 @@ class Empleado
 {
     public $id;
     public $nombre;
-    public $rol;
+    public $id_usuario;
     public $contacto;
     public $activo;
     public $fecha_creacion;
@@ -13,9 +13,9 @@ class Empleado
     public function InsertarEmpleadoParametros()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT into empleados (nombre,rol,contacto,activo,fecha_creacion) values (:nombre,:rol,:contacto,:activo,:fecha_creacion)");   
+        $consulta = $objetoAccesoDato->RetornarConsulta("INSERT into empleados (nombre,id_usuario,contacto,activo,fecha_creacion) values (:nombre,:id_usuario,:contacto,:activo,:fecha_creacion)");   
         $consulta->bindValue(':nombre', $this->nombre, PDO::PARAM_STR);
-        $consulta->bindValue(':rol', $this->rol, PDO::PARAM_STR);
+        $consulta->bindValue(':id_usuario', $this->id_usuario, PDO::PARAM_STR);
         $consulta->bindValue(':contacto', $this->contacto, PDO::PARAM_STR);
         $consulta->bindValue(':activo', $this->activo, PDO::PARAM_INT);
         $consulta->bindValue(':fecha_creacion', $this->fecha_creacion, PDO::PARAM_STR);     
@@ -56,6 +56,16 @@ class Empleado
         return $cdBuscado;
     }
 
+    public static function TraerUnEmpleadoPorIdUsuario($id_usuario)
+    {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM empleados where id_usuario = $id_usuario and activo = 0");
+        $consulta->execute();
+        $cdBuscado = $consulta->fetchObject('empleado');
+        
+        return $cdBuscado;
+    }
+
     public function BorrarEmpleado()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
@@ -83,12 +93,10 @@ class Empleado
         $consulta = $objetoAccesoDato->RetornarConsulta("
 				update empleados 
 				set nombre=:nombre,
-				rol=:rol,
 				contacto=:contacto
 				WHERE id=:id and activo = 0");
         $consulta->bindValue(':id', $this->id, PDO::PARAM_INT);
         $consulta->bindValue(':nombre', $this->nombre, PDO::PARAM_STR);
-        $consulta->bindValue(':rol', $this->rol, PDO::PARAM_STR);
         $consulta->bindValue(':contacto', $this->contacto, PDO::PARAM_STR);
         $resultado = $consulta->execute();
 

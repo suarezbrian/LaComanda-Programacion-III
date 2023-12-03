@@ -19,8 +19,8 @@ class UsuarioController {
             $response->getBody()->write(json_encode(['success' => false, 'message' => 'Credenciales inválidas']));
             return $response->withHeader('Content-Type', 'application/json');
         }
-
-        $token = AutentificadorJWT::CrearToken(['id_usuario' => $usuario->id, 'id_rol' => $usuario->id_rol, 'nombre' => $usuario->nombre]);
+        
+        $token = AutentificadorJWT::CrearToken(['id_usuario' => $usuario->id, 'id_rol' => $usuario->id_rol, 'nombre' => $usuario->nombre, 'esEmpleado' => $usuario->esEmpleado]);
         $response->getBody()->write(json_encode(['success' => true, 'token' => $token]));
         return $response->withHeader('Content-Type', 'application/json');
     }

@@ -26,7 +26,7 @@ class Producto
     public static function TraerTodosLosProductos()
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, nombre, precio, categoria FROM productos WHERE activo = 0");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM productos WHERE activo = 0");
         $consulta->execute();
         return $consulta->fetchAll(PDO::FETCH_CLASS, "Producto");
     }
@@ -34,7 +34,7 @@ class Producto
     public static function TraerUnProducto($id)
     {
         $objetoAccesoDato = db::ObjetoAcceso();
-        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT id, nombre, precio, categoria FROM productos WHERE id = $id AND activo = 0");
+        $consulta = $objetoAccesoDato->RetornarConsulta("SELECT * FROM productos WHERE id = $id AND activo = 0");
         $consulta->execute();
         $productoBuscado = $consulta->fetchObject('Producto');
         

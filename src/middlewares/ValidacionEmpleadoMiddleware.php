@@ -4,6 +4,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Slim\Psr7\Response;
 use Slim\Routing\RouteContext;
+include_once  __DIR__ . '/../models/usuario.php';
+
+
 class ValidacionEmpleadoMiddleware {
 
     public function __invoke(Request $request, RequestHandler $handler): Response {
@@ -27,8 +30,14 @@ class ValidacionEmpleadoMiddleware {
     
     private function validarInsertarEmpleado(Request $request, RequestHandler $handler): Response {
         $data = $request->getParsedBody();
-    
+   
         $validationResult = $this->validarCampos($request, $data);
+
+        $id_usuario = $data['id_usuario'];
+        $usuario = Usuario::TraerUnUsuario($id_usuario);
+        if($usuario === false) {
+            return $this->crearRespuesta('El usuario no existe o esta dado de baja');
+        }
 
         if ($validationResult) {
             return $handler->handle($validationResult);
@@ -52,15 +61,15 @@ class ValidacionEmpleadoMiddleware {
 
     private function validarCampos(Request $request, $data) {
         $nombre = $data['nombre'];
-        $rol = $data['rol'];
+        $id_usuario = $data['id_usuario'];
         $contacto = $data['contacto'];
 
-        if (empty($nombre) || empty($rol) || empty($contacto)) {
+        if (empty($nombre) || empty($contacto)) {
             return false;
         }
 
         $request = $request->withAttribute('nombre', $nombre);
-        $request = $request->withAttribute('rol', $rol);
+        $request = $request->withAttribute('id_usuario', $id_usuario);
         $request = $request->withAttribute('contacto', $contacto);
     
         return $request;

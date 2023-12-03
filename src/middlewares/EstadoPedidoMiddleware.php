@@ -5,7 +5,7 @@ use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Slim\Psr7\Response;
 
 include_once  __DIR__ . '/../models/estadoPedido.php';
-
+include_once  __DIR__ . '/../models/productoPedido.php';
 class EstadoPedidoMiddleware
 {
     public function __invoke(Request $request, RequestHandler $handler): Response
@@ -26,10 +26,20 @@ class EstadoPedidoMiddleware
                     return $this->crearRespuesta('El pedido ya tiene el estado '. $id_estado . ' = ' . $nombreEstado->nombre . ' asignado.');
 
                 }else{
-                    $request = $request->withAttribute('codigo_pedido', $codigo);
-                    $request = $request->withAttribute('id_estado', $id_estado);
-    
-                    return $handler->handle($request);      
+                    if($id_estado == 3 && $pedido->id_estado == 8){
+                        $pedidosEntregados = ProductoPedido::VerificarProductosEntregados($pedido->id);
+                        
+                        if($pedidosEntregados){
+                            $request = $request->withAttribute('codigo_pedido', $codigo);
+                            $request = $request->withAttribute('id_estado', $id_estado);
+            
+                            return $handler->handle($request);
+                        }else{
+                            return $this->crearRespuesta('Todavia no se prepararon todos los productos para este menu.');          
+                        }
+                    }else{
+                        return $this->crearRespuesta('Para que el pedido sea entregado, tiene que estar listo para servir.');  
+                    }
                 }
          
             } else {
