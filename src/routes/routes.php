@@ -32,7 +32,7 @@ return function (App $app) {
         $group->get('/get/{id}', 'MesaController:buscarMesaPorId');
         $group->delete('/delete/{id}', 'MesaController:borrarMesa');
         $group->put('/update/{id}', 'MesaController:modificarMesa')->setName('modificarMesa')->add(new ValidacionMesaMiddleware());
-        $group->put('/update/estado/{id}', 'MesaController:modificarEstadoMesa')->add(new RoleMiddleware(['rolValido' => ['Socio']]));
+        $group->put('/update/estado/{id}', 'MesaController:modificarEstadoMesa')->add(new RoleMiddleware(['rolValido' => ['Mozo', 'Socio']]));
         $group->get('/listar-mesas', 'MesaController:listarMesaYEstado')->add(new RoleMiddleware(['rolValido' => ['Socio']]));
         $group->get('/cobrar-mesas/{codigo_mesa}', 'MesaController:CalcularImportePedidoPorCodigoMesa')->add(new RoleMiddleware(['rolValido' => ['Mozo']]));
         $group->get('/mesa-mas-utilizada', 'MesaController:obtenerMesaMasUsada')->add(new RoleMiddleware(['rolValido' => ['Socio']]));
@@ -67,7 +67,7 @@ return function (App $app) {
         $group->get('/tiempo-demora/pedido/{codigo_mesa}/{codigo_pedido}', 'PedidoController:listarTiempoDemoraPedido')->add(new RoleMiddleware(['rolValido' => ['Usuario']]));
         $group->post('/cargar-encuesta', 'PedidoController:cargarEncuesta')->add(new RoleMiddleware(['rolValido' => ['Usuario']]));
         $group->get('/mejores-comentarios/{cantidad}', 'PedidoController:obtenerMejoresComentarios')->add(new RoleMiddleware(['rolValido' => ['Socio']]));
-        
+        $group->post('/cargar-imagen', 'PedidoController:subirFotoMesa')->add(new RoleMiddleware(['rolValido' => ['Mozo']]));
 
     })->add(new AuthMiddleware());
 

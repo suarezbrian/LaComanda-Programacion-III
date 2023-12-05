@@ -255,5 +255,34 @@ class Pedido
         return $consulta->fetchAll(PDO::FETCH_OBJ);
     }
 
+    public static function ModificarPedidoImporte($id,$importe)
+    {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET importe = :importe WHERE id = :id");
+        $consulta->bindValue(':id', $id, PDO::PARAM_INT);
+        $consulta->bindValue(':importe', $importe, PDO::PARAM_INT);
+        $resultado = $consulta->execute();
+
+        $filasAfectadas = $consulta->rowCount();
+        if ($filasAfectadas === 0 || !$resultado) {
+            return false;
+        }
+        return $id;
+    }
+
+    public static function ModificarPedidoRutaImagen($id,$img_ruta)
+    {
+        $objetoAccesoDato = db::ObjetoAcceso();
+        $consulta = $objetoAccesoDato->RetornarConsulta("UPDATE pedidos SET mesa_img = :img_ruta WHERE id = :id");
+        $consulta->bindValue(':id', $id, PDO::PARAM_INT);
+        $consulta->bindValue(':img_ruta', $img_ruta, PDO::PARAM_INT);
+        $resultado = $consulta->execute();
+
+        $filasAfectadas = $consulta->rowCount();
+        if ($filasAfectadas === 0 || !$resultado) {
+            return false;
+        }
+        return $id;
+    }
 
 }

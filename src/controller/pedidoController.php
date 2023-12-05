@@ -8,9 +8,13 @@ include_once  __DIR__ . '/../models/rol.php';
 include_once  __DIR__ . '/../models/estadoPedido.php';
 include_once  __DIR__ . '/../models/productoPedido.php';
 include_once  __DIR__ . '/../models/encuesta.php';
+include_once  __DIR__ . '/../controller/archivoController.php';
 
 class PedidoController {
-    
+
+    const RUTA_PROYECTO = __DIR__ . '/../..';
+    const RUTA_IMAGEN = self::RUTA_PROYECTO . '/imagen_pedidos/2023/';
+
     public function insertarPedido($request, $response, $args) {       
         $data = $request->getParsedBody();
     
@@ -141,9 +145,12 @@ class PedidoController {
             $pedidoData = [];
             foreach ($pedidos as $pedido) {
                 $pedidoData[] = [
+                    'id_pedido' => $pedido->id,
+                    'id_mesa' => $pedido->id_mesa,
                     'codigo' => $pedido->codigo,
                     'tiempo_estimado' => $pedido->tiempo_estimado,
-                    'estado' => $pedido->id_estado
+                    'estado' => $pedido->id_estado,
+                    'importe' => $pedido->importe,
                 ];
             }
             $response->getBody()->write(json_encode(['success' => true, 'pedidos' => $pedidoData]));
@@ -277,10 +284,11 @@ class PedidoController {
             $response->getBody()->write(json_encode(['success' => false, 'codigo_pedido' => $codigoPedido,'message' => 'No puedes agregar productos a pedidos entregados.']));
             return $response->withHeader('Content-Type', 'application/json');
         }
-       
+        $importeTotal = 0;
         foreach ($productos as $item) {
         
             $producto = Producto::TraerUnProducto($item["id"]);
+            $importeTotal = $importeTotal + $producto->precio;
             $idsProducto[] = $item['id'];
             $codigo_preparacion = "PROD_".$item['id'] . $pedido->id;
             $values[] = "({$item['id']}, $pedido->id,'$codigo_preparacion')";
@@ -289,12 +297,14 @@ class PedidoController {
                 $response->getBody()->write(json_encode(['success' => false, 'id_producto' => $item["id"],'message' => 'El producto no existe']));
                 return $response->withHeader('Content-Type', 'application/json');
             } 
-        }      
+        }  
+
         $valuesString = implode(", ", $values);
         $agregarProducto = Pedido::InsertarProductosAPedido($valuesString);     
         $contProducto = Pedido::IncrementarCantPedido($idsProducto);
         $estadoPedido = Pedido::CambiarEstadoPedido($pedido->codigo, 2, null);
-
+        $importe = Pedido::ModificarPedidoImporte($pedido->id,$importeTotal);
+        
         if($agregarProducto){
             $response->getBody()->write(json_encode(['success' => true, 'pedido' => $codigoPedido ,'message' => 'Productos agregados al pedido']));
         }else{
@@ -322,14 +332,15 @@ class PedidoController {
               
                 $producto = Producto::TraerUnProducto($item->id_producto);                
                 $pedido = Pedido::TraerUnPedido($item->id_pedido);            
-
+                $codigo_preparacion = "PROD_". $item->id_producto . $item->id_pedido;
                 if (in_array($producto->categoria, $categoriasPermitidas)) {
                     $arrayProducto[] = [
                         'id' => $item->id,
                         'nombre' => $producto->nombre,
                         'precio' => $producto->precio,
                         'categoria' => $producto->categoria,
-                        'codigo_pedido' => $pedido->codigo
+                        'codigo_pedido' => $pedido->codigo,
+                        'codigo_prepracion' => $codigo_preparacion
                     ];
                 }
             }
@@ -410,9 +421,11 @@ class PedidoController {
             $prodPedido->id_empleado = $emp->id;
             $prodPedido->ModificarProductoPedido();
 
-            $pedido = new Pedido();
-            $pedido->id = $productoPedido->id_pedido;                   
-            $pedido->ModificarPedidoTiempoEstimado($prodPedido->tiempo_estimado);
+            if($id_estado == 2){
+                $pedido = new Pedido();
+                $pedido->id = $productoPedido->id_pedido;                   
+                $pedido->ModificarPedidoTiempoEstimado($prodPedido->tiempo_estimado);
+            }
 
             $fechaExiste = Pedido::TraerUnPedido($productoPedido->id_pedido);
          
@@ -487,12 +500,11 @@ class PedidoController {
     }
 
     public function listarPedidosListoParaServir($request, $response, $args) {
+        $hayPedidos = false;
         $pedidos = Pedido::TraerTodosLosPedidos();
-    
         if (!$pedidos) {
-
-            $payload = json_encode(['success' => false, 'message' => 'No hay pedidos disponibles']);
-            $response->getBody()->write($payload);
+            $response->getBody()->write(json_encode(['success' => true, 'message' => 'No hay pedidos listo para servir.']));
+            return $response->withHeader('Content-Type', 'application/json');
         } else {
             $pedidoData = [];
             foreach ($pedidos as $pedido) {
@@ -502,9 +514,15 @@ class PedidoController {
                         'tiempo_estimado' => $pedido->tiempo_estimado,   
                         'id_estado' => $pedido->id_estado                 
                     ];
+                    $hayPedidos = true;
                 }
             }
-            $response->getBody()->write(json_encode(['success' => true, 'pedidos' => $pedidoData]));
+
+            if($hayPedidos){
+                $response->getBody()->write(json_encode(['success' => true, 'pedidos' => $pedidoData]));
+            }else{
+                $response->getBody()->write(json_encode(['success' => true, 'message' => 'No hay pedidos listo para servir.']));
+            }
         }
     
         return $response->withHeader('Content-Type', 'application/json');
@@ -525,10 +543,11 @@ class PedidoController {
             return $response->withHeader('Content-Type', 'application/json');                      
         }
 
-        $mesa = Mesa::TraerUnaMesaPorCodigo($codigo_mesa);
-        if(!$mesa){
-            $response->getBody()->write(json_encode(['success' => false, 'message' => 'No se encontro la mesa.']));
-            return $response->withHeader('Content-Type', 'application/json');                      
+        $mesa = Mesa::TraerUnaMesa($pedido->id_mesa);
+
+        if($mesa->codigo != $codigo_mesa){
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'El codigo de la mesa no corresponde a este pedido.']));
+            return $response->withHeader('Content-Type', 'application/json');    
         }
 
         if($valoracion < 0 || $valoracion > 5){
@@ -555,6 +574,7 @@ class PedidoController {
     }
 
     public function obtenerMejoresComentarios($request, $response, $args) {
+        
         $cantidad = $args['cantidad'];
 
         $mejoresComentarios = Encuesta::ObtenerMejoresComentarios($cantidad);
@@ -574,6 +594,42 @@ class PedidoController {
             $response->getBody()->write(json_encode(['success' => true, 'mejores_comentarios' => $comentarios]));
         }
     
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function subirFotoMesa($request, $response, $args)
+    {
+        $data = $request->getParsedBody();
+        $codigoPedido = $data['codigo_pedido']; 
+        $codigoMesa = $data['codigo_mesa']; 
+
+        $pedido = Pedido::TraerUnPedidoPorCodigo($codigoPedido);
+        if (!$pedido) {
+            $response->getBody()->write(json_encode(['success' => false, 'codigo_pedido' => $codigoPedido,'message' => 'El pedido no existe']));
+            return $response->withHeader('Content-Type', 'application/json');
+        } 
+
+        $mesa = Mesa::TraerUnaMesa($pedido->id_mesa);
+
+        if($mesa->codigo != $codigoMesa){
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'El codigo de la mesa no corresponde a este pedido.']));
+            return $response->withHeader('Content-Type', 'application/json');    
+        }
+       
+       
+        if(ArchivoController::validarImagen()){
+            $imgRuta = self::RUTA_IMAGEN . "{$codigoPedido}_{$codigoMesa}.jpg";
+            if(ArchivoController::cargarImagen($response, $imgRuta)){                           
+                
+                $imagen = Pedido::ModificarPedidoRutaImagen($pedido->id,$imgRuta);
+                $response->getBody()->write(json_encode(['success' => true,'message' => 'La imagen se cargo de forma correcta.']));
+                
+            }else{
+                $response->getBody()->write(json_encode(['success' => false, 'message' => 'Ocurrió algún error al subir la imagen.No pudo guardarse correctamente.']));
+            }
+        }else{
+            $response->getBody()->write(json_encode(['success' => false, 'message' => 'La extensión o el tamaño de los archivos no es correcta. Se permiten archivos .png o .jpg. Con tamaño maximo de 100 kb']));
+        }
         return $response->withHeader('Content-Type', 'application/json');
     }
 
